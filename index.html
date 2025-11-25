@@ -450,6 +450,83 @@
         }
 
         /* Blue */
+        /* Welcome Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            text-align: center;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            color: var(--accent-gold);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .disclaimer-list {
+            text-align: left;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+
+        .disclaimer-list li {
+            margin-bottom: 10px;
+        }
+
+        .modal-btn {
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
     </style>
     <script>
         //禁止拖動
@@ -2337,7 +2414,39 @@
                     });
             });
         }
+        // Welcome Modal Logic
+        function checkWelcomeModal() {
+            const hasSeenWelcome = localStorage.getItem('qmdj_welcome_seen');
+            if (!hasSeenWelcome) {
+                const modal = document.getElementById('welcome-modal');
+                // Small delay to ensure transition works
+                setTimeout(() => {
+                    modal.classList.add('active');
+                }, 100);
+            }
+        }
+
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            modal.classList.remove('active');
+            localStorage.setItem('qmdj_welcome_seen', 'true');
+        }
+
+        // Run check on load
+        window.addEventListener('DOMContentLoaded', checkWelcomeModal);
     </script>
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">歡迎使用 奇門遁甲 · 時空羅盤</div>
+            <ul class="disclaimer-list">
+                <li>此專案目前仍處於預覽階段，部分功能可能尚未完善。</li>
+                <li>此專案雖然與市面軟體比對未發現計算錯誤，惟作者亦為初學者，故仍無法保證完全準確。</li>
+                <li>使用者應對自己的決策負責，本專案僅提供參考，請勿將本專案作為事情的唯一決策依據，作者不為此專案造成的任何情況負責。</li>
+            </ul>
+            <button class="modal-btn" onclick="closeWelcomeModal()">開始使用</button>
+        </div>
+    </div>
 </body>
 
 </html>
