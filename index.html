@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width,min-scale=1.0 ,initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>奇門遁甲 - 時空羅盤</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
@@ -13,6 +13,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        rel="stylesheet">
     <style>
         :root {
             --bg-color: #121212;
@@ -373,10 +375,50 @@
         /* Sections */
         .section-title {
             font-size: 1.1rem;
+            font-weight: bold;
             color: var(--accent-gold);
-            margin: 20px 0 10px 0;
+            margin: 0 0 10px 0;
             border-left: 3px solid var(--accent-gold);
             padding-left: 10px;
+        }
+
+        details {
+            width: 375px;
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        details>summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 52px;
+            background-color: var(--bg-color);
+            z-index: 90;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        details>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details>summary .arrow {
+            transition: transform 0.3s ease;
+            display: inline-block;
+            font-size: 1.2rem;
+            /* Adjusted for icon */
+            opacity: 0.8;
+            transform: rotate(-90deg);
+            /* Default Closed: Point Right (from Left) */
+        }
+
+        details[open]>summary .arrow {
+            transform: rotate(90deg);
+            /* Open: Point Down (from Left) */
         }
 
         footer {
@@ -600,7 +642,17 @@
 <body>
 
     <header>
+        <div id="compass-info"
+            style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; color: var(--accent-gold); font-weight: bold; display: none;">
+            <!-- Info will be populated by JS -->
+        </div>
         <h1 style="font-weight: bold;">奇門遁甲 · 時空羅盤</h1>
+        <div id="compass-container" onclick="requestCompassPermission()"
+            style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 2px; cursor: pointer;">
+            <span id="compass-icon" class="material-symbols-outlined"
+                style="font-size: 1.5rem; color: var(--accent-gold); transition: transform 0.1s ease-out;">explore_off</span>
+            <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: bold;">南</span>
+        </div>
     </header>
 
     <div class="container">
@@ -642,8 +694,8 @@
     <div class="card" style="position: relative; overflow: visible; margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <span class="card-title">奇門盤 (時盤)</span>
-            <button class="btn btn-outline" id="compass-toggle" onclick="toggleCompass()"
-                style="font-size: 0.8rem; padding: 4px 12px;">啟用羅盤</button>
+            <!-- <button class="btn btn-outline" id="compass-toggle" onclick="toggleCompass()"
+                style="font-size: 0.8rem; padding: 4px 12px;">啟用羅盤</button> -->
         </div>
 
         <div id="chart-container"
@@ -678,561 +730,797 @@
     </div>
 
     <!-- Analysis Section -->
-    <div class="section-title">吉凶指南</div>
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">總結</span>
+    <details open>
+        <summary class="section-title">
+            吉凶指南
+            <span class="material-symbols-outlined arrow">arrow_back_ios_new</span>
+        </summary>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">總結</span>
+            </div>
+            <div id="chart-summary" style="font-size: 0.9rem; line-height: 1.6;">
+                <!-- Summary content -->
+            </div>
         </div>
-        <div id="chart-summary" style="font-size: 0.9rem; line-height: 1.6;">
-            <!-- Summary content -->
+        <div class="card" style="margin-top: 15px;">
+            <div class="card-header">
+                <span class="card-title">風險評估</span>
+            </div>
+            <div id="risk-assessment" style="font-size: 0.9rem;"></div>
         </div>
-    </div>
-    <div class="card" style="margin-top: 15px;">
-        <div class="card-header">
-            <span class="card-title">風險評估</span>
+        <div class="card" style="margin-top: 15px;">
+            <div class="card-header">
+                <span class="card-title">吉方速查</span>
+            </div>
+            <div id="lucky-directions"></div>
         </div>
-        <div id="risk-assessment" style="font-size: 0.9rem;"></div>
-    </div>
-    <div class="card" style="margin-top: 15px;">
-        <div class="card-header">
-            <span class="card-title">吉方速查</span>
+        <div class="card" style="margin-top: 15px;">
+            <div class="card-header">
+                <span class="card-title">格局分析</span>
+            </div>
+            <div id="pattern-analysis"></div>
         </div>
-        <div id="lucky-directions"></div>
-    </div>
-    <div class="card" style="margin-top: 15px;">
-        <div class="card-header">
-            <span class="card-title">格局分析</span>
-        </div>
-        <div id="pattern-analysis"></div>
-    </div>
+    </details>
 
     <!-- Beginner Guide Section -->
-    <div class="section-title">新手使用教學</div>
-    <div class="card">
-        <!-- Tabs Header -->
-        <div style="display: flex; border-bottom: 1px solid #444; margin-bottom: 15px;">
-            <div class="tab-btn active" onclick="switchGuideTab('decision')" id="tab-btn-decision"
-                style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid var(--accent-gold); color: var(--accent-gold); font-weight: bold;">
-                選擇困難
-            </div>
-            <div class="tab-btn" onclick="switchGuideTab('travel')" id="tab-btn-travel"
-                style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text-muted);">
-                出遊吉凶
-            </div>
-        </div>
-
-        <!-- Tab Content: Decision -->
-        <div id="guide-decision" class="guide-content" style="font-size: 0.9rem; line-height: 1.8; color: #ddd;">
-            <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲 · 選擇困難模式》</h3>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
-                簡單五步驟判斷 A/B 兩個選項孰優<br>
-                適用：買車、選公司、選房間、選科系、選兩間店... 只要是 2 選 1 都能用。
-            </p>
-
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
-                <strong>⭐ 第 0 步：</strong> 決定好「兩個選項」在心裡，在盤上選擇「你問問題的時間」(或最早開始猶豫的時間)
-            </div>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">① 找到宮位 (最重要)</h4>
-            <p>
-                ● <strong style="color:#f1c40f">生門</strong> 所在的宮 → 代表 <strong>選項 A</strong><br>
-                ● <strong style="color:#f1c40f">開門</strong> 所在的宮 → 代表 <strong>選項 B</strong><br>
-                <span style="font-size:0.8rem; color:#aaa;">(生門=成長/財/發展，開門=開始/行動/進入)</span>
-            </p>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">② 比門 (核心指標)</h4>
-            <p>
-                <strong>吉：</strong> 生 ＞ 開 ＞ 休<br>
-                <strong>平：</strong> 景 ＞ 杜<br>
-                <strong>凶：</strong> 傷 ＞ 驚 ＞ 死<br>
-                📌 比較：誰的門比較吉 → 優先選那邊
-            </p>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">③ 比星 (第二重要)</h4>
-            <p>
-                <strong>吉：</strong> 天輔(最佳) ＞ 天心 ＞ 天任<br>
-                <strong>平：</strong> 天英 ＞ 天柱<br>
-                <strong>凶：</strong> 天芮(瑕疵) ＞ 天蓬(差) ＞ 天沖(亂)<br>
-                📌 比較：誰比較吉 → 加 1 分
-            </p>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">④ 比神 (副作用)</h4>
-            <p>
-                <strong>吉：</strong> 太陰、六合、九天 (佳)<br>
-                <strong>凶：</strong> 白虎(爭吵)、玄武(被騙)<br>
-                📌 比較：誰比較乾淨 → 加分
-            </p>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">⑤ 總結</h4>
-            <p>
-                加總 A 與 B 的優劣，分數高者為佳。<br>
-                <span style="color:#e74c3c; font-size:0.85rem;">※ 若值符落死門或盤勢混亂 → 此時辰不適合問，請換下一時辰重排。</span>
-            </p>
-        </div>
-
-        <!-- Tab Content: Travel -->
-        <div id="guide-travel" class="guide-content"
-            style="display: none; font-size: 0.9rem; line-height: 1.8; color: #ddd;">
-            <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲：今天適不適合出去玩？》</h3>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
-                如何使用時盤看旅遊方向吉凶
-            </p>
-
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
-                <strong>1️⃣ 確認方位：</strong> 旅遊地相對你家的方位 (北、南、東、西...)<br>
-                <strong>2️⃣ 開盤時間：</strong> 以「出門的那一刻」為準
-            </div>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">3️⃣ 找到對應宮位</h4>
-            <p>
-                北方(坎一)、西南(坤二)、東方(震三)、東南(巽四)<br>
-                中央(中五)、西北(乾六)、西方(兌七)、東北(艮八)、南方(離九)
-            </p>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">4️⃣ 查看該宮八門 (吉凶關鍵)</h4>
-            <ul style="margin: 5px 0 10px 20px; padding: 0;">
-                <li><strong style="color:#f1c40f"> 吉門 (適合出去玩)：</strong><br>
-                    <strong>生門 (最好)：</strong> 玩得順、天氣佳、買到想買的<br>
-                    <strong>開門：</strong> 活動順利、交通順<br>
-                    <strong>休門：</strong> 欣賞型旅遊、自然、散心超好
-                </li>
-                <li><strong style="color:var(--accent-blue);margin-top:5px;">➖ 平門 (普通)：</strong><br>
-                    <strong>景門：</strong> 拍照很好看，但走起來比較累<br>
-                    <strong>杜門：</strong> 慢、塞車、景點關閉、排隊
-                </li>
-                <li style="margin-top:5px;"><strong style="color:#e74c3c">❌ 凶門 (不適合去玩)：</strong><br>
-                    <strong>驚門：</strong> 突發狀況、迷路、資訊混亂<br>
-                    <strong>傷門：</strong> 會累、會受傷、跌倒、身體不舒服<br>
-                    <strong>死門：</strong> 天氣差、玩不開心、白跑一趟
-                </li>
-            </ul>
-
-            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">5️⃣ 加分參考</h4>
-            <p>
-                <strong>✔ 1. 九星 (加減分)</strong><br>
-                天輔/天心/天任 → 出遊讚<br>
-                天英 → 景色漂亮<br>
-                天芮 → 容易生病或路線不舒服<br>
-                天沖/天蓬 → 混亂、吵、累、事故
-            </p>
-            <p>
-                <strong>✔ 2. 八神 (副作用)</strong><br>
-                太陰、六合 → 適合文青行程<br>
-                九天 → 適合登山、體能<br>
-                白虎、玄武 → 今天真的不要亂跑
-            </p>
-            <p>
-                <strong>✔ 3. 宮位五行</strong><br>
-                火位 (離九) → 遊玩最嗨<br>
-                木位 (震三/巽四) → 踩點拍照佳<br>
-                水位 (坎一) → 適合休息<br>
-                土位 (坤二/艮八) → 適合輕鬆行程
-            </p>
-
+    <details>
+        <summary class="section-title">
+            決策情境參考
+            <span class="material-symbols-outlined arrow">arrow_back_ios_new</span>
+        </summary>
+        <div class="card">
+            <!-- Tabs Header -->
+            <!-- Tabs Header -->
+            <!-- Tabs Header -->
+            <!-- Tabs Header -->
             <div
-                style="margin-top:15px; padding:10px; border-left:3px solid var(--accent-gold); background:rgba(212, 175, 55, 0.1);">
-                <strong>👉 結論：</strong><br>
-                若該方位落 <strong>吉門</strong> → 今天適合往那裡玩！
+                style="display: flex; align-items: center; border-bottom: 1px solid #444; margin-bottom: 15px; position: sticky; top: 96px; background-color: var(--card-bg); z-index: 80; padding-top: 5px;">
+                <span id="tab-scroll-left" class="material-symbols-outlined"
+                    onclick="document.getElementById('tabs-container').scrollBy({left: -100, behavior: 'smooth'})"
+                    style="cursor: pointer; padding: 5px; color: var(--text-muted); user-select: none; visibility: hidden;">chevron_left</span>
+
+                <div id="tabs-container"
+                    style="display: flex; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 5px; flex: 1; scroll-behavior: smooth; scrollbar-width: none;">
+                    <div class="tab-btn active" onclick="switchGuideTab('decision')" id="tab-btn-decision"
+                        style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid var(--accent-gold); color: var(--accent-gold); font-weight: bold; flex-shrink: 0;">
+                        選擇困難
+                    </div>
+                    <div class="tab-btn" onclick="switchGuideTab('travel')" id="tab-btn-travel"
+                        style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text-muted); flex-shrink: 0;">
+                        出遊吉凶
+                    </div>
+                    <div class="tab-btn" onclick="switchGuideTab('lost-items')" id="tab-btn-lost-items"
+                        style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text-muted); flex-shrink: 0;">
+                        找東西
+                    </div>
+                    <div class="tab-btn" onclick="switchGuideTab('exam')" id="tab-btn-exam"
+                        style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text-muted); flex-shrink: 0;">
+                        安排考試
+                    </div>
+                    <div class="tab-btn" onclick="switchGuideTab('renovation')" id="tab-btn-renovation"
+                        style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text-muted); flex-shrink: 0;">
+                        修房子
+                    </div>
+                </div>
+
+                <span id="tab-scroll-right" class="material-symbols-outlined"
+                    onclick="document.getElementById('tabs-container').scrollBy({left: 100, behavior: 'smooth'})"
+                    style="cursor: pointer; padding: 5px; color: var(--text-muted); user-select: none;">chevron_right</span>
             </div>
+
+            <!-- Tab Content: Decision -->
+            <div id="guide-decision" class="guide-content" style="font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+                <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲：選擇困難模式》</h3>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
+                    把每個選項分配到 8 個方位，找出最吉利的方向。
+                </p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">① 每個選項 = 一個方位</h4>
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:10px;">
+                    <strong>分配規則：</strong><br>
+                    1. 北<br>
+                    2. 東北<br>
+                    3. 東<br>
+                    4. 東南<br>
+                    5. 南<br>
+                    6. 西南<br>
+                    7. 西<br>
+                    8. 西北<br>
+                    <span style="font-size:0.8rem; color:#aaa;">(超過 8 個選項則循環 1→8)</span>
+                </div>
+                <p>例：有 5 間餐廳 → 分別對應 北、東北、東、東南、南。</p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">② 起時盤</h4>
+                <p>按下決定的當下時間起盤，觀察這 8 個方位的吉凶。</p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">③ 看每個方位的八門 (核心指標)</h4>
+                <p><strong>吉凶排序：</strong> <span style="color:#f1c40f">生 ＞ 休 ＞ 開</span> ＞ 景 ＞ 杜 ＞ 驚 ＞ 傷 ＞ <span
+                        style="color:#e74c3c">死</span></p>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>生門：</strong> 最好吃、最順、最開心</li>
+                    <li><strong>休門：</strong> 舒服、好環境、不踩雷</li>
+                    <li><strong>開門：</strong> 人緣好、聊天順、氣氛好</li>
+                    <li><strong>景門：</strong> 適合拍照、推薦打卡</li>
+                    <li><strong>杜門：</strong> 普通但不會出事</li>
+                    <li><strong>驚門：</strong> 吵、亂、容易被氣到</li>
+                    <li><strong>傷門：</strong> 容易踩雷、吃壞肚子</li>
+                    <li><strong>死門：</strong> 不要去 (直接淘汰)</li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">④ 看九星 (補充判斷)</h4>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>天英 (火)：</strong> 視覺、好吃、亮眼</li>
+                    <li><strong>天任 (土)：</strong> 穩定、吃得飽</li>
+                    <li><strong>天輔 (木)：</strong> 服務好</li>
+                    <li><strong>天柱 (金)：</strong> 容易等很久</li>
+                    <li><strong>天芮 (土)：</strong> 容易吃壞</li>
+                    <li><strong>天沖 (木)：</strong> 很吵</li>
+                    <li><strong>天蓬 (水)：</strong> 髒亂</li>
+                    <li><strong>天心 (金)：</strong> 好看、乾淨</li>
+                    <li><strong>天禽 (土)：</strong> 中規中矩</li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">⑤ 最後結論</h4>
+                <p>
+                    取 <strong>八門最吉</strong> 的方位 = 最佳選擇。<br>
+                    <span style="color:#f1c40f">優先選：生門、休門、開門。</span>
+                </p>
+            </div>
+
+            <!-- Tab Content: Travel -->
+            <div id="guide-travel" class="guide-content"
+                style="display: none; font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+                <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲：今天適不適合出去玩？》</h3>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
+                    如何使用時盤看旅遊方向吉凶
+                </p>
+
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+                    <strong>1️⃣ 確認方位：</strong> 旅遊地相對你家的方位 (北、南、東、西...)<br>
+                    <strong>2️⃣ 開盤時間：</strong> 以「出門的那一刻」為準
+                </div>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">3️⃣ 找到對應宮位</h4>
+                <p>
+                    北方(坎一)、西南(坤二)、東方(震三)、東南(巽四)<br>
+                    中央(中五)、西北(乾六)、西方(兌七)、東北(艮八)、南方(離九)
+                </p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">4️⃣ 查看該宮八門 (吉凶關鍵)</h4>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong style="color:#f1c40f"> 吉門 (適合出去玩)：</strong><br>
+                        <strong>生門 (最好)：</strong> 玩得順、天氣佳、買到想買的<br>
+                        <strong>開門：</strong> 活動順利、交通順<br>
+                        <strong>休門：</strong> 欣賞型旅遊、自然、散心超好
+                    </li>
+                    <li><strong style="color:var(--accent-blue);margin-top:5px;">➖ 平門 (普通)：</strong><br>
+                        <strong>景門：</strong> 拍照很好看，但走起來比較累<br>
+                        <strong>杜門：</strong> 慢、塞車、景點關閉、排隊
+                    </li>
+                    <li style="margin-top:5px;"><strong style="color:#e74c3c">❌ 凶門 (不適合去玩)：</strong><br>
+                        <strong>驚門：</strong> 突發狀況、迷路、資訊混亂<br>
+                        <strong>傷門：</strong> 會累、會受傷、跌倒、身體不舒服<br>
+                        <strong>死門：</strong> 天氣差、玩不開心、白跑一趟
+                    </li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">5️⃣ 加分參考</h4>
+                <p>
+                    <strong>✔ 1. 九星 (加減分)</strong><br>
+                    天輔/天心/天任 → 出遊讚<br>
+                    天英 → 景色漂亮<br>
+                    天芮 → 容易生病或路線不舒服<br>
+                    天沖/天蓬 → 混亂、吵、累、事故
+                </p>
+                <p>
+                    <strong>✔ 2. 八神 (副作用)</strong><br>
+                    太陰、六合 → 適合文青行程<br>
+                    九天 → 適合登山、體能<br>
+                    白虎、玄武 → 今天真的不要亂跑
+                </p>
+                <p>
+                    <strong>✔ 3. 宮位五行</strong><br>
+                    火位 (離九) → 遊玩最嗨<br>
+                    木位 (震三/巽四) → 踩點拍照佳<br>
+                    水位 (坎一) → 適合休息<br>
+                    土位 (坤二/艮八) → 適合輕鬆行程
+                </p>
+
+                <div
+                    style="margin-top:15px; padding:10px; border-left:3px solid var(--accent-gold); background:rgba(212, 175, 55, 0.1);">
+                    <strong>👉 結論：</strong><br>
+                    若該方位落 <strong>吉門</strong> → 今天適合往那裡玩！
+                </div>
+            </div>
+
+            <!-- Tab Content: Lost Items -->
+            <div id="guide-lost-items" class="guide-content"
+                style="display: none; font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+                <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲：找東西》</h3>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">如果找人看這邊</h4>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>尋找活人：例如老婆 </strong>生門</li>
+                    <li><strong>尋找逃犯：例如通缉犯 </strong>傷門</li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">1. 先選你掉的是什麼物品（判斷五行）</h4>
+
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:10px;">
+                    <strong style="color:var(--accent-gold);">🌟 萬物五行（極短通則）</strong>
+                    <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                        <li><strong>木：</strong> 纖維、布料、紙、植物、可彎、長條<br><span
+                                style="color:#aaa; font-size:0.85rem;">(例：衣服、書、卡片、雨傘、蛇)</span></li>
+                        <li><strong>火：</strong> 光、熱、電、紅色、快速、會飛<br><span
+                                style="color:#aaa; font-size:0.85rem;">(例：螢幕、充電器、貓、鳥)</span></li>
+                        <li><strong>土：</strong> 甜味、容器、方形、粉末、厚重<br><span
+                                style="color:#aaa; font-size:0.85rem;">(例：糖果、行李箱、碗、蛋糕)</span></li>
+                        <li><strong>金：</strong> 金屬、硬殼、科技、工具、白色光滑<br><span
+                                style="color:#aaa; font-size:0.85rem;">(例：AirPods、鑰匙、螃蟹、手機)</span></li>
+                        <li><strong>水：</strong> 液體、黑色、透明、濕、會游、鹹味<br><span
+                                style="color:#aaa; font-size:0.85rem;">(例：水壺、海鮮、飲料、黑色物品)</span></li>
+                    </ul>
+
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);">
+                        <strong>⭐ 五味＝五行（超好記）</strong><br>
+                        酸＝木、苦＝火、甜＝土、辛/辣＝金、鹹＝水
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <strong>🐾 動物五行（一句話）</strong><br>
+                        細長＝木、會飛快動＝火、胖重＝土、硬殼爪牙＝金、會游或濕＝水。
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <strong>🎨 顏色五行（簡版）</strong><br>
+                        綠＝木、紅＝火、黃/棕＝土、白＝金、黑/藍＝水
+                    </div>
+                </div>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">2. 按下「起時盤」</h4>
+                <p>使用現在時間起盤（找東西一定用「時盤」）。</p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">3. 依物品五行，看對應的符號</h4>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>金</strong> → 看天盤 + 八神（玄武 / 白虎）</li>
+                    <li><strong>木</strong> → 看地盤 + 八門（休門 / 杜門）</li>
+                    <li><strong>水</strong> → 看景門</li>
+                    <li><strong>火</strong> → 看開門 / 景門</li>
+                    <li><strong>土</strong> → 看死門 + 坤宮 / 艮宮</li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">4. 看它落在哪一宮 = 掉在哪個方向</h4>
+                <p>以你「現在站的位置」為中心：</p>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li>往對應方位走</li>
+                </ul>
+                <p>例如：玄武落「西南」＝往 左後方 找。</p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">5. 根據象意找該方向最可能的地方</h4>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>玄武：</strong> 黑暗處、床底、縫隙</li>
+                    <li><strong>白虎：</strong> 硬殼物、包包裡、桌角旁</li>
+                    <li><strong>騰蛇：</strong> 衣服堆、棉被、沙發</li>
+                    <li><strong>死門：</strong> 垃圾桶附近、角落</li>
+                    <li><strong>杜門：</strong> 抽屜、櫃子</li>
+                    <li><strong>休門：</strong> 包包、口袋</li>
+                    <li><strong>景門：</strong> 桌面、明顯的位置</li>
+                    <li><strong>開門：</strong> 門口附近、走道</li>
+                </ul>
+            </div>
+
+            <!-- Tab Content: Exam -->
+            <div id="guide-exam" class="guide-content"
+                style="display: none; font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+                <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲：安排考試》</h3>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
+                    主看景門（腦袋清楚程度）＋ 九星（思考品質）＋ 天地盤（力量方向）
+                </p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">① 景門 (腦袋亮度/理解力/靈感)</h4>
+                <p>景門在你考試的「方位」或「你面向的方向」＝最加分。</p>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>景門 旺＋位置好</strong> → 超適合考試</li>
+                    <li><strong>景門 弱或落凶宮</strong> → 腦袋鈍、容易看錯題</li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">② 天地盤生剋 (結果是否順利)</h4>
+                <p>最簡單一條：</p>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>天盤 生 地盤</strong> → 你會越寫越順</li>
+                    <li><strong>地盤 生 天盤</strong> → 平穩 OK</li>
+                    <li><strong>天盤 剋 地盤</strong> → 不順、容易卡題</li>
+                    <li><strong>地盤 剋 天盤</strong> → 出事、寫不完、算錯</li>
+                </ul>
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-top:10px;">
+                    <strong>💡 觀念釐清：</strong><br>
+                    “看景門天地盤有沒有相剋” 是其中一個超重要指標，但不是唯一的。
+                </div>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">③ 九星決定 (你那天的「腦袋品質」)</h4>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>天英 (火)：</strong> 超有靈感、記憶好</li>
+                    <li><strong>天心 (金)：</strong> 邏輯精準 (最適合考試)</li>
+                    <li><strong>天輔 (木)：</strong> 理解力好</li>
+                    <li><strong>天任 (土)：</strong> 穩定，不會失常</li>
+                    <li><strong>天芮 (土)：</strong> 容易感冒、疲累</li>
+                    <li><strong>天蓬 (水)：</strong> 渾渾噩噩</li>
+                    <li><strong>天柱 (水)：</strong> 容易拖延</li>
+                    <li><strong>天沖 (木)：</strong> 心浮浮 (要避免)</li>
+                </ul>
+                <p><strong>🏆 考試最推：</strong> 天心 ＞ 天英 ＞ 天輔 ＞ 天任</p>
+
+                <div
+                    style="margin-top:15px; padding:10px; border-left:3px solid var(--accent-gold); background:rgba(212, 175, 55, 0.1);">
+                    <strong>📝 超短版總結：</strong><br>
+                    考試看景門是否在吉方＋九星是否利讀書＋天地盤是否相生。<br>
+                    <span style="color:#f1c40f">景門旺＋天盤生地盤＝最適合考試。</span>
+                </div>
+            </div>
+
+            <!-- Tab Content: Renovation -->
+            <div id="guide-renovation" class="guide-content"
+                style="display: none; font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+                <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲：修房子》</h3>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">① 確定房子方位 & ② 分成九宮格</h4>
+                <p>房子會被分成：東、南、西、北＋四隅＋中宮。</p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">③ 找出要修的地方在哪一宮</h4>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>廁所落在哪宮</strong> → 看那宮</li>
+                    <li><strong>廚房落在哪宮</strong> → 看那宮</li>
+                    <li><strong>房間落在哪宮</strong> → 看那宮</li>
+                    <li><strong>客廳在正中心</strong> → 看寄宮 (中宮不直接解)</li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">④ 起時盤</h4>
+                <p>修房子一定看「當下」的時盤。</p>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">⑤ 判斷那一宮的吉凶</h4>
+
+                <strong>1. 八門 (最重要)</strong>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>開門 / 生門</strong> → 最適合修</li>
+                    <li><strong>杜門</strong> → 普通可做</li>
+                    <li><strong>驚 / 傷 / 死門</strong> → 避免今天開工</li>
+                </ul>
+
+                <strong>2. 天地盤 (決定順不順)</strong>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>天盤 生 地盤</strong> → 工程超順</li>
+                    <li><strong>地盤 生 天盤</strong> → 可以</li>
+                    <li><strong>天盤 剋 地盤</strong> → 容易出錯</li>
+                    <li><strong>地盤 剋 天盤</strong> → 返工、漏水、延期</li>
+                </ul>
+
+                <strong>3. 九星 (補充)</strong>
+                <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                    <li><strong>天任 / 天心 / 天輔</strong> → 適合裝修</li>
+                    <li><strong>天芮 / 天蓬</strong> → 易發霉、漏水、卡工</li>
+                </ul>
+
+                <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">⑥ 結論</h4>
+                <p>
+                    修哪裡，就看哪宮。<br>
+                    那宮是吉門＋生剋佳＝適合修。<br>
+                    落死門＋剋盤＝請換一天。
+                </p>
+
+                <div
+                    style="margin-top:15px; padding:10px; border-left:3px solid var(--accent-gold); background:rgba(212, 175, 55, 0.1);">
+                    <strong>⭐ 一句話版：</strong><br>
+                    修哪裡＝看那宮。<br>
+                    <span style="color:#f1c40f">開門/生門最吉；死門最忌。</span><br>
+                    天盤生地盤＝工程順；天盤剋地盤＝容易翻車。
+                </div>
+            </div>
+
+            <script>
+                function switchGuideTab(tab) {
+                    // Hide all content
+                    document.querySelectorAll('.guide-content').forEach(el => el.style.display = 'none');
+                    // Show selected content
+                    document.getElementById('guide-' + tab).style.display = 'block';
+
+                    // Reset tabs
+                    document.querySelectorAll('.tab-btn').forEach(el => {
+                        el.style.borderBottom = '2px solid transparent';
+                        el.style.color = 'var(--text-muted)';
+                        el.style.fontWeight = 'normal';
+                    });
+                    // Activate selected tab
+                    const activeBtn = document.getElementById('tab-btn-' + tab);
+                    activeBtn.style.borderBottom = '2px solid var(--accent-gold)';
+                    activeBtn.style.color = 'var(--accent-gold)';
+                    activeBtn.style.fontWeight = 'bold';
+                }
+            </script>
         </div>
-
-        <script>
-            function switchGuideTab(tab) {
-                // Hide all content
-                document.querySelectorAll('.guide-content').forEach(el => el.style.display = 'none');
-                // Show selected content
-                document.getElementById('guide-' + tab).style.display = 'block';
-
-                // Reset tabs
-                document.querySelectorAll('.tab-btn').forEach(el => {
-                    el.style.borderBottom = '2px solid transparent';
-                    el.style.color = 'var(--text-muted)';
-                    el.style.fontWeight = 'normal';
-                });
-                // Activate selected tab
-                const activeBtn = document.getElementById('tab-btn-' + tab);
-                activeBtn.style.borderBottom = '2px solid var(--accent-gold)';
-                activeBtn.style.color = 'var(--accent-gold)';
-                activeBtn.style.fontWeight = 'bold';
-            }
-        </script>
-    </div>
+    </details>
 
     <!-- Guide Section -->
-    <div class="section-title">說明書</div>
-    <div class="card">
-        <div style="font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+    <details open>
+        <summary class="section-title">
+            說明書
+            <span class="material-symbols-outlined arrow">arrow_back_ios_new</span>
+        </summary>
+        <div class="card">
+            <div style="font-size: 0.9rem; line-height: 1.8; color: #ddd;">
 
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px; margin-top:0;">0.
-                判斷優先順序</h3>
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:5px; margin-bottom:15px;">
-                <div>1️⃣ <strong>天干</strong> (佔吉凶 70%) <span style="color:#aaa; font-size:0.85rem;">天盤表外力、地盤表本質</span>
-                </div>
-                <div style="margin-top:5px;">2️⃣ <strong>八門</strong> (行為目的)</div>
-                <div style="margin-top:5px;">3️⃣ <strong>九星</strong> (趨勢)</div>
-                <div style="margin-top:5px;">4️⃣ <strong>八神</strong> (氣氛)</div>
-                <div style="margin-top:5px;">5️⃣ <strong>宮位五行</strong> (背景)</div>
-            </div>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">1. 四柱
-            </h3>
-            <p>即您的「年、月、日、時」八字。奇門排盤的基礎在於時間。</p>
-            <ul>
-                <li><strong>年柱：</strong> 每年立春（約2月4日）為分界點。立春前屬上一年。</li>
-                <li><strong>月柱：</strong> 以二十四節氣為分界（如驚蟄換月）。</li>
-                <li><strong>日柱：</strong> 每日23:00（子時）更換日柱。</li>
-                <li><strong>時柱：</strong> 每兩小時為一個時辰。</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">2. 八門詳解</h3>
-            <p>八門代表「人事」，是判斷吉凶的關鍵。</p>
-            <ul>
-                <li><strong style="color:#f1c40f">開門 (吉)：</strong> 五行屬金。利於開業、經商、求財、考學、出行。</li>
-                <li><strong style="color:#f1c40f">休門 (吉)：</strong> 五行屬水。利於休養、會見貴人、調解糾紛、婚姻嫁娶。</li>
-                <li><strong style="color:#f1c40f">生門 (吉)：</strong> 五行屬土。大吉之門，利於求財、營造、治病、生產。</li>
-                <li><strong style="color:#e74c3c">傷門 (凶)：</strong> 五行屬木。主受傷、討債、賭博。不利經商出行。</li>
-                <li><strong style="color:#e74c3c">杜門 (平/凶)：</strong> 五行屬木。主隱藏、保密、躲災。不利主動出擊。</li>
-                <li><strong style="color:#e74c3c">景門 (平/吉)：</strong> 五行屬火。主文書、考試、訊息。小心口舌是非。</li>
-                <li><strong style="color:#e74c3c">死門 (大凶)：</strong> 五行屬土。主弔喪、刑戮。諸事不宜，唯宜狩獵弔唁。</li>
-                <li><strong style="color:#e74c3c">驚門 (凶)：</strong> 五行屬金。主驚恐、官司、口舌。宜律師辯護，餘事不宜。</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">3. 九星詳解</h3>
-            <p>九星代表「天時」，影響大環境與時機。</p>
-            <ul>
-                <li><strong style="color:#e74c3c">天心 (吉)：</strong> 利於醫療、管理、策劃。</li>
-                <li><strong style="color:#e74c3c">天輔 (吉)：</strong> 利於教育、考試、升職。</li>
-                <li><strong style="color:#e74c3c">天禽 (大吉)：</strong> 尊貴之星，百事皆吉。</li>
-                <li><strong style="color:#e74c3c">天任 (吉)：</strong> 利於任職、談判、求財。</li>
-                <li><strong style="color:#e74c3c">天沖 (吉/平)：</strong> 利於出征、運動，不利安靜之事。</li>
-                <li><strong style="color:#aaa">天蓬 (凶)：</strong> 主盜賊、破財、水災。</li>
-                <li><strong style="color:#aaa">天芮 (凶)：</strong> 病星，主疾病、問題所在。</li>
-                <li><strong style="color:#aaa">天柱 (凶)：</strong> 主口舌、官非、破壞。</li>
-                <li><strong style="color:#aaa">天英 (平)：</strong> 主血光、火災，也主名聲、社交。</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">4. 八神詳解</h3>
-            <p>八神代表「神助」，是不可見的能量影響。</p>
-            <ul>
-                <li><strong style="color:#3498db">值符 (大吉)：</strong> 眾神之首，百惡消散，最吉之神。</li>
-                <li><strong style="color:#3498db">騰蛇 (凶)：</strong> 主虛驚怪異、反覆無常、夢魘。</li>
-                <li><strong style="color:#3498db">太陰 (吉)：</strong> 主密謀、策劃、陰佑、隱蔽。</li>
-                <li><strong style="color:#3498db">六合 (吉)：</strong> 主婚姻、交易、仲介、合作。</li>
-                <li><strong style="color:#3498db">白虎 (大凶)：</strong> 主血光、車禍、刑傷、爭鬥。</li>
-                <li><strong style="color:#3498db">玄武 (凶)：</strong> 主盜竊、口舌、小人、曖昧。</li>
-                <li><strong style="color:#3498db">九地 (吉)：</strong> 主屯兵、埋伏、長久、安靜。</li>
-                <li><strong style="color:#3498db">九天 (吉)：</strong> 主揚兵、遠行、名聲、動態。</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">5. 十天干</h3>
-            <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 20px;">
-                <thead>
-                    <tr style="border-bottom: 1px solid #555; color: var(--accent-gold);">
-                        <th style="padding: 5px; text-align: left;">天干</th>
-                        <th style="padding: 5px; text-align: left;">陰陽</th>
-                        <th style="padding: 5px; text-align: left;">五行</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 5px;">甲</td>
-                        <td style="padding: 5px;">陽</td>
-                        <td style="padding: 5px;">木</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">乙</td>
-                        <td style="padding: 5px;">陰</td>
-                        <td style="padding: 5px;">木</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">丙</td>
-                        <td style="padding: 5px;">陽</td>
-                        <td style="padding: 5px;">火</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">丁</td>
-                        <td style="padding: 5px;">陰</td>
-                        <td style="padding: 5px;">火</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">戊</td>
-                        <td style="padding: 5px;">陽</td>
-                        <td style="padding: 5px;">土</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">己</td>
-                        <td style="padding: 5px;">陰</td>
-                        <td style="padding: 5px;">土</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">庚</td>
-                        <td style="padding: 5px;">陽</td>
-                        <td style="padding: 5px;">金</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">辛</td>
-                        <td style="padding: 5px;">陰</td>
-                        <td style="padding: 5px;">金</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">壬</td>
-                        <td style="padding: 5px;">陽</td>
-                        <td style="padding: 5px;">水</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">癸</td>
-                        <td style="padding: 5px;">陰</td>
-                        <td style="padding: 5px;">水</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">6. 十二地支</h3>
-            <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 20px;">
-                <thead>
-                    <tr style="border-bottom: 1px solid #555; color: var(--accent-gold);">
-                        <th style="padding: 5px; text-align: left;">地支</th>
-                        <th style="padding: 5px; text-align: left;">生肖</th>
-                        <th style="padding: 5px; text-align: left;">五行</th>
-                        <th style="padding: 5px; text-align: left;">方位</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 5px;">子</td>
-                        <td style="padding: 5px;">鼠</td>
-                        <td style="padding: 5px;">水</td>
-                        <td style="padding: 5px;">北</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">丑</td>
-                        <td style="padding: 5px;">牛</td>
-                        <td style="padding: 5px;">土</td>
-                        <td style="padding: 5px;">東北</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">寅</td>
-                        <td style="padding: 5px;">虎</td>
-                        <td style="padding: 5px;">木</td>
-                        <td style="padding: 5px;">東北</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">卯</td>
-                        <td style="padding: 5px;">兔</td>
-                        <td style="padding: 5px;">木</td>
-                        <td style="padding: 5px;">東</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">辰</td>
-                        <td style="padding: 5px;">龍</td>
-                        <td style="padding: 5px;">土</td>
-                        <td style="padding: 5px;">東南</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">巳</td>
-                        <td style="padding: 5px;">蛇</td>
-                        <td style="padding: 5px;">火</td>
-                        <td style="padding: 5px;">東南</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">午</td>
-                        <td style="padding: 5px;">馬</td>
-                        <td style="padding: 5px;">火</td>
-                        <td style="padding: 5px;">南</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">未</td>
-                        <td style="padding: 5px;">羊</td>
-                        <td style="padding: 5px;">土</td>
-                        <td style="padding: 5px;">西南</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">申</td>
-                        <td style="padding: 5px;">猴</td>
-                        <td style="padding: 5px;">金</td>
-                        <td style="padding: 5px;">西南</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">酉</td>
-                        <td style="padding: 5px;">雞</td>
-                        <td style="padding: 5px;">金</td>
-                        <td style="padding: 5px;">西</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">戌</td>
-                        <td style="padding: 5px;">狗</td>
-                        <td style="padding: 5px;">土</td>
-                        <td style="padding: 5px;">西北</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">亥</td>
-                        <td style="padding: 5px;">豬</td>
-                        <td style="padding: 5px;">水</td>
-                        <td style="padding: 5px;">西北</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">7. 十二時辰宜忌</h3>
-            <div style="font-size: 0.9rem; line-height: 1.6;">
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">子時（23:00 – 01:00）——屬水，陰氣最盛</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 靜心、冥想、洗滌、淨化、構思、寫作<br>
-                    <span style="color: #c0392b;">忌：</span> 激烈運動、大吵大鬧、情緒爆發、飲酒過量
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">丑時（01:00 – 03:00）——屬土，養精蓄銳</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 熟睡、養肝排毒（傳統觀念）、閱讀、安靜活動<br>
-                    <span style="color: #c0392b;">忌：</span> 熬夜工作、重口味飲食
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">寅時（03:00 – 05:00）——屬木，陽氣初生</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 準備新計畫、祈福、靜坐、早起運動（輕度）<br>
-                    <span style="color: #c0392b;">忌：</span> 高壓工作、大量咖啡因
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">卯時（05:00 – 07:00）——屬木，一日開始</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 早起、伸展、散步、制定今日目標<br>
-                    <span style="color: #c0392b;">忌：</span> 賴床（依傳統說法會壓運）、暴飲暴食的早餐
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">辰時（07:00 – 09:00）——屬土，活力上升</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 上工、讀書、開會、談合作、提升專注力的事<br>
-                    <span style="color: #c0392b;">忌：</span> 遲到、拖延重要事務
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">巳時（09:00 – 11:00）——屬火，效率最佳</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 面試、業務談判、重要決定<br>
-                    <span style="color: #c0392b;">忌：</span> 情緒性決策、過度承諾
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">午時（11:00 – 13:00）——屬火，陽極而生陰</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 用餐、適度休息、暫停工作<br>
-                    <span style="color: #c0392b;">忌：</span> 長時間曝曬、過度操勞
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">未時（13:00 – 15:00）——屬土，身心過渡期</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 放鬆、創意發想、緩步運動<br>
-                    <span style="color: #c0392b;">忌：</span> 緊急重要談判、情緒衝動
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">申時（15:00 – 17:00）——屬金，腦力回升</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 處理複雜問題、文件、分析、寫作、商業交易<br>
-                    <span style="color: #c0392b;">忌：</span> 難以集中精神者避免重任
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">酉時（17:00 – 19:00）——屬金，收斂</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 用餐、家庭活動、反思今天<br>
-                    <span style="color: #c0392b;">忌：</span> 過度加班、高油脂飲食
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">戌時（19:00 – 21:00）——屬土，適合沉澱</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 學習、讀書、療癒類活動、整理環境<br>
-                    <span style="color: #c0392b;">忌：</span> 過度娛樂、情緒消耗
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong style="color: var(--accent-gold);">亥時（21:00 – 23:00）——屬水，收心安神</strong><br>
-                    <span style="color: #27ae60;">宜：</span> 放鬆、冥想、睡前準備、靜態休閒<br>
-                    <span style="color: #c0392b;">忌：</span> 藍光刺激、大量進食
-                </div>
-            </div>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">8. 九宮八卦</h3>
-            <p>九宮代表「地利」，是盤面的基礎方位與五行屬性。</p>
-            <ul>
-                <li><strong>坎一 (北/水)：</strong> 智慧、流動、陷阱。</li>
-                <li><strong>坤二 (西南/土)：</strong> 包容、大地、緩慢。</li>
-                <li><strong>震三 (東/木)：</strong> 啟動、衝擊、發生。</li>
-                <li><strong>巽四 (東南/木)：</strong> 交易、利市、不穩。</li>
-                <li><strong>中五 (中/土)：</strong> 核心、極點 (寄於坤二或艮八)。</li>
-                <li><strong>乾六 (西北/金)：</strong> 權力、領導、剛健。</li>
-                <li><strong>兌七 (西/金)：</strong> 口舌、缺損、變革。</li>
-                <li><strong>艮八 (東北/土)：</strong> 停止、阻隔、靠山。</li>
-                <li><strong>離九 (南/火)：</strong> 文書、顯眼、虛幻。</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">9. 局數與節氣</h3>
-            <p>奇門遁甲分為「陽遁」與「陰遁」，共18局。</p>
-            <ul>
-                <li><strong>陽遁：</strong> 冬至後至夏至前（能量上升期）。</li>
-                <li><strong>局數：</strong> 根據當日的節氣與日干支計算，決定了局面的基本架構。</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">10. 旬首</h3>
-            <p>「旬」是10個時辰的週期，「旬首」是這10個時辰的領隊（一定是甲）。<br>
-                例如：甲子旬的10個時辰內，旬首都是「甲子（戊）」。<br>
-                <strong>作用：</strong> 旬首決定了「值符（大將）」與「值使（傳令官）」的位置，是排盤的核心。
-            </p>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">11. 天地盤干解讀</h3>
-            <p>左下角的兩個字（上為天盤，下為地盤）是判斷吉凶的重要依據。</p>
-            <ul>
-                <li><strong>地盤天干 (下)：</strong> 事情的本質（固定）。代表事件本體、根本狀況與真實面。</li>
-                <li><strong>天盤天干 (上)：</strong> 事情的變化（動態）。代表外在因素、現在的情況，以及結果趨勢。</li>
-            </ul>
-            <p><strong>天干相生相剋（吉凶判斷核心）：</strong></p>
-            <ul>
-                <li><span style="color:#27ae60;">天盤 生 地盤</span> → <strong>順利、助力</strong> (外在環境幫助本體)</li>
-                <li><span style="color:#e74c3c;">天盤 剋 地盤</span> → <strong>阻礙、麻煩、壓力</strong> (外在環境壓迫本體)</li>
-                <li><span style="color:#f39c12;">地盤 生 天盤</span> → <strong>消耗、費力</strong> (本體需付出以支撐外在)</li>
-                <li><span style="color:#3498db;">地盤 剋 天盤</span> → <strong>主導權</strong> (本體能壓住情勢，雖有挑戰但能掌控)</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">12. 盤面解讀</h3>
-            <p>九宮格中，每一格（宮）代表一個方位。看盤重點：</p>
-            <ul>
-                <li><span style="color:#3498db">八神 (頂部藍字)</span>：神助力量。<strong>值符</strong>最吉。</li>
-                <li><span style="color:#e74c3c">九星 (中間紅字)</span>：天時地利。</li>
-                <li><span style="color:#f1c40f">八門 (中間黃字)</span>：人事行動。</li>
-                <li><span style="color:#ccc">天地盤干 (右下角)</span>：上字為天盤，下字為地盤。</li>
-            </ul>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">13. 甲時</h3>
-            <p>每日有12個時辰，其中天干為「甲」的時辰稱為甲時（如甲子時、甲戌時...）。<br>
-                此時辰是能量重啟的時刻，也是「旬首」變換的時刻，適合進行重要的啟動儀式或決策。</p>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">14. 羅盤模式</h3>
-            <p>點擊「啟用羅盤」後，平放手機。盤面會自動旋轉，使盤上的「南」對準真實的南方。<br>
-                <strong>注意：</strong> iOS 需在 HTTPS 環境下使用。
-            </p>
-
-            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">15. 特殊標示說明</h3>
-            <p>盤面上可能出現的小標籤：</p>
-            <ul>
-                <li><span
-                        style="background-color:#c0392b; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">刑</span>
-                    <strong>擊刑：</strong> 天盤干與地盤宮位形成相刑。代表極度難受、彆扭、受折磨。
-                </li>
-                <li><span
-                        style="background-color:#7f8c8d; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">墓</span>
-                    <strong>入墓：</strong> 天盤干進入墓庫宮位。代表能量被困住、發揮不出來、無力。
-                </li>
-                <li><span
-                        style="background-color:#d35400; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">迫</span>
-                    <strong>門迫：</strong> 門的五行剋宮位五行。代表該門的吉凶能量被打折，甚至轉凶 (吉門不吉，凶門更凶)。
-                </li>
-                <li style="margin-top:8px;"><strong>宮位頂端標籤 (天地盤關係)：</strong>
-                    <div style="margin-top:5px; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                        <div><span
-                                style="background-color:rgba(39, 174, 96, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">天生</span>
-                            助力大，順利</div>
-                        <div><span
-                                style="background-color:rgba(192, 57, 43, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">天剋</span>
-                            壓力大，阻礙</div>
-                        <div><span
-                                style="background-color:rgba(243, 156, 18, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">地生</span>
-                            需付出，較累</div>
-                        <div><span
-                                style="background-color:rgba(41, 128, 185, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">地剋</span>
-                            能掌控，主導</div>
-                        <div><span
-                                style="background-color:rgba(127, 140, 141, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">比和</span>
-                            平穩，和諧</div>
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px; margin-top:0;">0.
+                    判斷優先順序</h3>
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:5px; margin-bottom:15px;">
+                    <div>1️⃣ <strong>天干</strong> (佔吉凶 70%) <span
+                            style="color:#aaa; font-size:0.85rem;">天盤表外力、地盤表本質</span>
                     </div>
-                </li>
-            </ul>
+                    <div style="margin-top:5px;">2️⃣ <strong>八門</strong> (行為目的)</div>
+                    <div style="margin-top:5px;">3️⃣ <strong>九星</strong> (趨勢)</div>
+                    <div style="margin-top:5px;">4️⃣ <strong>八神</strong> (氣氛)</div>
+                    <div style="margin-top:5px;">5️⃣ <strong>宮位五行</strong> (背景)</div>
+                </div>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">1. 四柱
+                </h3>
+                <p>即您的「年、月、日、時」八字。奇門排盤的基礎在於時間。</p>
+                <ul>
+                    <li><strong>年柱：</strong> 每年立春（約2月4日）為分界點。立春前屬上一年。</li>
+                    <li><strong>月柱：</strong> 以二十四節氣為分界（如驚蟄換月）。</li>
+                    <li><strong>日柱：</strong> 每日23:00（子時）更換日柱。</li>
+                    <li><strong>時柱：</strong> 每兩小時為一個時辰。</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">2. 八門詳解</h3>
+                <p>八門代表「人事」，是判斷吉凶的關鍵。</p>
+                <ul>
+                    <li><strong style="color:#f1c40f">開門 (吉)：</strong> 五行屬金。利於開業、經商、求財、考學、出行。</li>
+                    <li><strong style="color:#f1c40f">休門 (吉)：</strong> 五行屬水。利於休養、會見貴人、調解糾紛、婚姻嫁娶。</li>
+                    <li><strong style="color:#f1c40f">生門 (吉)：</strong> 五行屬土。大吉之門，利於求財、營造、治病、生產。</li>
+                    <li><strong style="color:#e74c3c">傷門 (凶)：</strong> 五行屬木。主受傷、討債、賭博。不利經商出行。</li>
+                    <li><strong style="color:#e74c3c">杜門 (平/凶)：</strong> 五行屬木。主隱藏、保密、躲災。不利主動出擊。</li>
+                    <li><strong style="color:#e74c3c">景門 (平/吉)：</strong> 五行屬火。主文書、考試、訊息。小心口舌是非。</li>
+                    <li><strong style="color:#e74c3c">死門 (大凶)：</strong> 五行屬土。主弔喪、刑戮。諸事不宜，唯宜狩獵弔唁。</li>
+                    <li><strong style="color:#e74c3c">驚門 (凶)：</strong> 五行屬金。主驚恐、官司、口舌。宜律師辯護，餘事不宜。</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">3. 九星詳解</h3>
+                <p>九星代表「天時」，影響大環境與時機。</p>
+                <ul>
+                    <li><strong style="color:#e74c3c">天心 (吉)：</strong> 利於醫療、管理、策劃。</li>
+                    <li><strong style="color:#e74c3c">天輔 (吉)：</strong> 利於教育、考試、升職。</li>
+                    <li><strong style="color:#e74c3c">天禽 (大吉)：</strong> 尊貴之星，百事皆吉。</li>
+                    <li><strong style="color:#e74c3c">天任 (吉)：</strong> 利於任職、談判、求財。</li>
+                    <li><strong style="color:#e74c3c">天沖 (吉/平)：</strong> 利於出征、運動，不利安靜之事。</li>
+                    <li><strong style="color:#aaa">天蓬 (凶)：</strong> 主盜賊、破財、水災。</li>
+                    <li><strong style="color:#aaa">天芮 (凶)：</strong> 病星，主疾病、問題所在。</li>
+                    <li><strong style="color:#aaa">天柱 (凶)：</strong> 主口舌、官非、破壞。</li>
+                    <li><strong style="color:#aaa">天英 (平)：</strong> 主血光、火災，也主名聲、社交。</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">4. 八神詳解</h3>
+                <p>八神代表「神助」，是不可見的能量影響。</p>
+                <ul>
+                    <li><strong style="color:#3498db">值符 (大吉)：</strong> 眾神之首，百惡消散，最吉之神。</li>
+                    <li><strong style="color:#3498db">騰蛇 (凶)：</strong> 主虛驚怪異、反覆無常、夢魘。</li>
+                    <li><strong style="color:#3498db">太陰 (吉)：</strong> 主密謀、策劃、陰佑、隱蔽。</li>
+                    <li><strong style="color:#3498db">六合 (吉)：</strong> 主婚姻、交易、仲介、合作。</li>
+                    <li><strong style="color:#3498db">白虎 (大凶)：</strong> 主血光、車禍、刑傷、爭鬥。</li>
+                    <li><strong style="color:#3498db">玄武 (凶)：</strong> 主盜竊、口舌、小人、曖昧。</li>
+                    <li><strong style="color:#3498db">九地 (吉)：</strong> 主屯兵、埋伏、長久、安靜。</li>
+                    <li><strong style="color:#3498db">九天 (吉)：</strong> 主揚兵、遠行、名聲、動態。</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">5. 十天干</h3>
+                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #555; color: var(--accent-gold);">
+                            <th style="padding: 5px; text-align: left;">天干</th>
+                            <th style="padding: 5px; text-align: left;">陰陽</th>
+                            <th style="padding: 5px; text-align: left;">五行</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 5px;">甲</td>
+                            <td style="padding: 5px;">陽</td>
+                            <td style="padding: 5px;">木</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">乙</td>
+                            <td style="padding: 5px;">陰</td>
+                            <td style="padding: 5px;">木</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">丙</td>
+                            <td style="padding: 5px;">陽</td>
+                            <td style="padding: 5px;">火</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">丁</td>
+                            <td style="padding: 5px;">陰</td>
+                            <td style="padding: 5px;">火</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">戊</td>
+                            <td style="padding: 5px;">陽</td>
+                            <td style="padding: 5px;">土</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">己</td>
+                            <td style="padding: 5px;">陰</td>
+                            <td style="padding: 5px;">土</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">庚</td>
+                            <td style="padding: 5px;">陽</td>
+                            <td style="padding: 5px;">金</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">辛</td>
+                            <td style="padding: 5px;">陰</td>
+                            <td style="padding: 5px;">金</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">壬</td>
+                            <td style="padding: 5px;">陽</td>
+                            <td style="padding: 5px;">水</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">癸</td>
+                            <td style="padding: 5px;">陰</td>
+                            <td style="padding: 5px;">水</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">6. 十二地支</h3>
+                <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #555; color: var(--accent-gold);">
+                            <th style="padding: 5px; text-align: left;">地支</th>
+                            <th style="padding: 5px; text-align: left;">生肖</th>
+                            <th style="padding: 5px; text-align: left;">五行</th>
+                            <th style="padding: 5px; text-align: left;">方位</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 5px;">子</td>
+                            <td style="padding: 5px;">鼠</td>
+                            <td style="padding: 5px;">水</td>
+                            <td style="padding: 5px;">北</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">丑</td>
+                            <td style="padding: 5px;">牛</td>
+                            <td style="padding: 5px;">土</td>
+                            <td style="padding: 5px;">東北</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">寅</td>
+                            <td style="padding: 5px;">虎</td>
+                            <td style="padding: 5px;">木</td>
+                            <td style="padding: 5px;">東北</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">卯</td>
+                            <td style="padding: 5px;">兔</td>
+                            <td style="padding: 5px;">木</td>
+                            <td style="padding: 5px;">東</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">辰</td>
+                            <td style="padding: 5px;">龍</td>
+                            <td style="padding: 5px;">土</td>
+                            <td style="padding: 5px;">東南</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">巳</td>
+                            <td style="padding: 5px;">蛇</td>
+                            <td style="padding: 5px;">火</td>
+                            <td style="padding: 5px;">東南</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">午</td>
+                            <td style="padding: 5px;">馬</td>
+                            <td style="padding: 5px;">火</td>
+                            <td style="padding: 5px;">南</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">未</td>
+                            <td style="padding: 5px;">羊</td>
+                            <td style="padding: 5px;">土</td>
+                            <td style="padding: 5px;">西南</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">申</td>
+                            <td style="padding: 5px;">猴</td>
+                            <td style="padding: 5px;">金</td>
+                            <td style="padding: 5px;">西南</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">酉</td>
+                            <td style="padding: 5px;">雞</td>
+                            <td style="padding: 5px;">金</td>
+                            <td style="padding: 5px;">西</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">戌</td>
+                            <td style="padding: 5px;">狗</td>
+                            <td style="padding: 5px;">土</td>
+                            <td style="padding: 5px;">西北</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">亥</td>
+                            <td style="padding: 5px;">豬</td>
+                            <td style="padding: 5px;">水</td>
+                            <td style="padding: 5px;">西北</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">7. 十二時辰宜忌</h3>
+                <div style="font-size: 0.9rem; line-height: 1.6;">
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">子時（23:00 – 01:00）——屬水，陰氣最盛</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 靜心、冥想、洗滌、淨化、構思、寫作<br>
+                        <span style="color: #c0392b;">忌：</span> 激烈運動、大吵大鬧、情緒爆發、飲酒過量
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">丑時（01:00 – 03:00）——屬土，養精蓄銳</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 熟睡、養肝排毒（傳統觀念）、閱讀、安靜活動<br>
+                        <span style="color: #c0392b;">忌：</span> 熬夜工作、重口味飲食
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">寅時（03:00 – 05:00）——屬木，陽氣初生</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 準備新計畫、祈福、靜坐、早起運動（輕度）<br>
+                        <span style="color: #c0392b;">忌：</span> 高壓工作、大量咖啡因
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">卯時（05:00 – 07:00）——屬木，一日開始</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 早起、伸展、散步、制定今日目標<br>
+                        <span style="color: #c0392b;">忌：</span> 賴床（依傳統說法會壓運）、暴飲暴食的早餐
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">辰時（07:00 – 09:00）——屬土，活力上升</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 上工、讀書、開會、談合作、提升專注力的事<br>
+                        <span style="color: #c0392b;">忌：</span> 遲到、拖延重要事務
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">巳時（09:00 – 11:00）——屬火，效率最佳</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 面試、業務談判、重要決定<br>
+                        <span style="color: #c0392b;">忌：</span> 情緒性決策、過度承諾
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">午時（11:00 – 13:00）——屬火，陽極而生陰</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 用餐、適度休息、暫停工作<br>
+                        <span style="color: #c0392b;">忌：</span> 長時間曝曬、過度操勞
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">未時（13:00 – 15:00）——屬土，身心過渡期</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 放鬆、創意發想、緩步運動<br>
+                        <span style="color: #c0392b;">忌：</span> 緊急重要談判、情緒衝動
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">申時（15:00 – 17:00）——屬金，腦力回升</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 處理複雜問題、文件、分析、寫作、商業交易<br>
+                        <span style="color: #c0392b;">忌：</span> 難以集中精神者避免重任
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">酉時（17:00 – 19:00）——屬金，收斂</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 用餐、家庭活動、反思今天<br>
+                        <span style="color: #c0392b;">忌：</span> 過度加班、高油脂飲食
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">戌時（19:00 – 21:00）——屬土，適合沉澱</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 學習、讀書、療癒類活動、整理環境<br>
+                        <span style="color: #c0392b;">忌：</span> 過度娛樂、情緒消耗
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--accent-gold);">亥時（21:00 – 23:00）——屬水，收心安神</strong><br>
+                        <span style="color: #27ae60;">宜：</span> 放鬆、冥想、睡前準備、靜態休閒<br>
+                        <span style="color: #c0392b;">忌：</span> 藍光刺激、大量進食
+                    </div>
+                </div>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">8. 九宮八卦</h3>
+                <p>九宮代表「地利」，是盤面的基礎方位與五行屬性。</p>
+                <ul>
+                    <li><strong>坎一 (北/水)：</strong> 智慧、流動、陷阱。</li>
+                    <li><strong>坤二 (西南/土)：</strong> 包容、大地、緩慢。</li>
+                    <li><strong>震三 (東/木)：</strong> 啟動、衝擊、發生。</li>
+                    <li><strong>巽四 (東南/木)：</strong> 交易、利市、不穩。</li>
+                    <li><strong>中五 (中/土)：</strong> 核心、極點 (寄於坤二或艮八)。</li>
+                    <li><strong>乾六 (西北/金)：</strong> 權力、領導、剛健。</li>
+                    <li><strong>兌七 (西/金)：</strong> 口舌、缺損、變革。</li>
+                    <li><strong>艮八 (東北/土)：</strong> 停止、阻隔、靠山。</li>
+                    <li><strong>離九 (南/火)：</strong> 文書、顯眼、虛幻。</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">9. 局數與節氣</h3>
+                <p>奇門遁甲分為「陽遁」與「陰遁」，共18局。</p>
+                <ul>
+                    <li><strong>陽遁：</strong> 冬至後至夏至前（能量上升期）。</li>
+                    <li><strong>局數：</strong> 根據當日的節氣與日干支計算，決定了局面的基本架構。</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">10. 旬首</h3>
+                <p>「旬」是10個時辰的週期，「旬首」是這10個時辰的領隊（一定是甲）。<br>
+                    例如：甲子旬的10個時辰內，旬首都是「甲子（戊）」。<br>
+                    <strong>作用：</strong> 旬首決定了「值符（大將）」與「值使（傳令官）」的位置，是排盤的核心。
+                </p>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">11. 天地盤干解讀</h3>
+                <p>左下角的兩個字（上為天盤，下為地盤）是判斷吉凶的重要依據。</p>
+                <ul>
+                    <li><strong>地盤天干 (下)：</strong> 事情的本質（固定）。代表事件本體、根本狀況與真實面。</li>
+                    <li><strong>天盤天干 (上)：</strong> 事情的變化（動態）。代表外在因素、現在的情況，以及結果趨勢。</li>
+                </ul>
+                <p><strong>天干相生相剋（吉凶判斷核心）：</strong></p>
+                <ul>
+                    <li><span style="color:#27ae60;">天盤 生 地盤</span> → <strong>順利、助力</strong> (外在環境幫助本體)</li>
+                    <li><span style="color:#e74c3c;">天盤 剋 地盤</span> → <strong>阻礙、麻煩、壓力</strong> (外在環境壓迫本體)</li>
+                    <li><span style="color:#f39c12;">地盤 生 天盤</span> → <strong>消耗、費力</strong> (本體需付出以支撐外在)</li>
+                    <li><span style="color:#3498db;">地盤 剋 天盤</span> → <strong>主導權</strong> (本體能壓住情勢，雖有挑戰但能掌控)</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">12. 盤面解讀</h3>
+                <p>九宮格中，每一格（宮）代表一個方位。看盤重點：</p>
+                <ul>
+                    <li><span style="color:#3498db">八神 (頂部藍字)</span>：神助力量。<strong>值符</strong>最吉。</li>
+                    <li><span style="color:#e74c3c">九星 (中間紅字)</span>：天時地利。</li>
+                    <li><span style="color:#f1c40f">八門 (中間黃字)</span>：人事行動。</li>
+                    <li><span style="color:#ccc">天地盤干 (右下角)</span>：上字為天盤，下字為地盤。</li>
+                </ul>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">13. 甲時</h3>
+                <p>每日有12個時辰，其中天干為「甲」的時辰稱為甲時（如甲子時、甲戌時...）。<br>
+                    此時辰是能量重啟的時刻，也是「旬首」變換的時刻，適合進行重要的啟動儀式或決策。</p>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">14. 羅盤模式</h3>
+                <p>點擊「啟用羅盤」後，平放手機。盤面會自動旋轉，使盤上的「南」對準真實的南方。<br>
+                    <strong>注意：</strong> iOS 需在 HTTPS 環境下使用。
+                </p>
+
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">15. 特殊標示說明</h3>
+                <p>盤面上可能出現的小標籤：</p>
+                <ul>
+                    <li><span
+                            style="background-color:#c0392b; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">刑</span>
+                        <strong>擊刑：</strong> 天盤干與地盤宮位形成相刑。代表極度難受、彆扭、受折磨。
+                    </li>
+                    <li><span
+                            style="background-color:#7f8c8d; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">墓</span>
+                        <strong>入墓：</strong> 天盤干進入墓庫宮位。代表能量被困住、發揮不出來、無力。
+                    </li>
+                    <li><span
+                            style="background-color:#d35400; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">迫</span>
+                        <strong>門迫：</strong> 門的五行剋宮位五行。代表該門的吉凶能量被打折，甚至轉凶 (吉門不吉，凶門更凶)。
+                    </li>
+                    <li style="margin-top:8px;"><strong>宮位頂端標籤 (天地盤關係)：</strong>
+                        <div style="margin-top:5px; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                            <div><span
+                                    style="background-color:rgba(39, 174, 96, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">天生</span>
+                                助力大，順利</div>
+                            <div><span
+                                    style="background-color:rgba(192, 57, 43, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">天剋</span>
+                                壓力大，阻礙</div>
+                            <div><span
+                                    style="background-color:rgba(243, 156, 18, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">地生</span>
+                                需付出，較累</div>
+                            <div><span
+                                    style="background-color:rgba(41, 128, 185, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">地剋</span>
+                                能掌控，主導</div>
+                            <div><span
+                                    style="background-color:rgba(127, 140, 141, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">比和</span>
+                                平穩，和諧</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
+    </details>
     <div style="height: 20px; width: 100%;"></div>
 
     <footer>
@@ -2437,6 +2725,129 @@
 
         // Run check on load
         window.addEventListener('DOMContentLoaded', checkWelcomeModal);
+
+        // Auto scroll to details summary when collapsed
+        document.querySelectorAll('details').forEach((detail) => {
+            detail.addEventListener('toggle', (e) => {
+                if (!detail.open) {
+                    // Give the DOM a moment to update layout
+                    setTimeout(() => {
+                        const headerOffset = 70; // Header height (~55px) + buffer
+                        const elementPosition = detail.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: "smooth"
+                        });
+                    }, 10);
+                }
+            });
+        });
+
+        // Tab Scroll Logic
+        const tabsContainer = document.getElementById('tabs-container');
+        const leftArrow = document.getElementById('tab-scroll-left');
+        const rightArrow = document.getElementById('tab-scroll-right');
+
+        function updateTabScrollArrows() {
+            if (!tabsContainer) return;
+
+            // Left Arrow
+            if (tabsContainer.scrollLeft <= 10) { // Small buffer
+                leftArrow.style.visibility = 'hidden';
+            } else {
+                leftArrow.style.visibility = 'visible';
+            }
+
+            // Right Arrow
+            // Allow a small buffer (1px) for calculation errors
+            if (tabsContainer.scrollLeft + tabsContainer.clientWidth >= tabsContainer.scrollWidth - 1) {
+                rightArrow.style.visibility = 'hidden';
+            } else {
+                rightArrow.style.visibility = 'visible';
+            }
+        }
+
+        if (tabsContainer) {
+            tabsContainer.addEventListener('scroll', updateTabScrollArrows);
+            window.addEventListener('resize', updateTabScrollArrows);
+            // Initial check
+            // Use setTimeout to ensure layout is ready
+            setTimeout(updateTabScrollArrows, 100);
+        }
+
+        // Compass Logic
+        let compassActive = false;
+
+        function requestCompassPermission() {
+            if (compassActive) {
+                disableCompass();
+                return;
+            }
+
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // iOS 13+
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            enableCompass();
+                        } else {
+                            alert('需要羅盤權限才能顯示方位');
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Non-iOS 13+
+                enableCompass();
+            }
+        }
+
+        function enableCompass() {
+            compassActive = true;
+            document.getElementById('compass-icon').innerText = 'north';
+            document.getElementById('compass-info').style.display = 'block';
+            window.addEventListener('deviceorientation', handleOrientation);
+        }
+
+        function disableCompass() {
+            compassActive = false;
+            document.getElementById('compass-icon').innerText = 'explore_off';
+            document.getElementById('compass-icon').style.transform = 'rotate(0deg)';
+            document.getElementById('compass-info').style.display = 'none';
+            window.removeEventListener('deviceorientation', handleOrientation);
+        }
+
+        function handleOrientation(event) {
+            let heading = 0;
+
+            if (event.webkitCompassHeading) {
+                // iOS
+                heading = event.webkitCompassHeading;
+            } else if (event.alpha) {
+                // Android (alpha is 0 at North usually)
+                if (!event.absolute && event.absolute !== undefined) {
+                    // Relative orientation
+                }
+                heading = 360 - event.alpha;
+            }
+
+            // Normalize heading
+            heading = (heading + 360) % 360;
+
+            // Point to South: 180 - heading
+            const icon = document.getElementById('compass-icon');
+            icon.style.transform = `rotate(${180 - heading}deg)`;
+
+            // Update Info Text
+            const directions = ['北', '東北', '東', '東南', '南', '西南', '西', '西北'];
+            // 0 is North. 360/8 = 45. 
+            // North is 337.5 - 22.5
+            const index = Math.round(heading / 45) % 8;
+            const directionStr = directions[index];
+
+            document.getElementById('compass-info').innerText = `${directionStr} ${Math.round(heading)}°`;
+        }
     </script>
     <!-- Welcome Modal -->
     <div id="welcome-modal" class="modal-overlay">
