@@ -1,0 +1,2343 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>奇門遁甲 - 時空羅盤</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --accent-gold: #d4af37;
+            --accent-red: #c0392b;
+            --accent-green: #27ae60;
+            --accent-blue: #2980b9;
+            --border-color: #333;
+            --grid-line: #444;
+        }
+
+        body {
+            font-family: '-apple-system', 'BlinkMacSystemFont', 'SF Pro', 'SF Pro Display', 'PingFang TC', 'Inter', 'Roboto', 'AppleGothic', 'Microsoft JhengHei UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            background: rgba(18, 18, 18, 0.95);
+            border-bottom: 1px solid var(--accent-gold);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            letter-spacing: 2px;
+            font-weight: 400;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 600px;
+            padding: 10px 0 40px 0;
+            /* Increased bottom padding */
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Center cards */
+            gap: 15px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            width: 375px;
+            box-sizing: border-box;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="datetime-local"] {
+            font-family: '-apple-system', 'BlinkMacSystemFont', 'SF Pro', 'SF Pro Display', 'PingFang TC', 'Inter', 'Roboto', 'AppleGothic', 'Microsoft JhengHei UI', sans-serif;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .btn {
+            background-color: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Info Grid */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .highlight {
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        .auspicious {
+            color: var(--accent-green);
+        }
+
+        .inauspicious {
+            color: var(--accent-red);
+        }
+
+        /* Nine Palace Grid (Jiu Gong) */
+        .qimen-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            background-color: var(--grid-line);
+            border: 2px solid var(--accent-gold);
+            aspect-ratio: 1;
+            margin-top: 10px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .palace {
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: rgba(20, 20, 20, 0.8);
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Zhi Fu Highlight */
+        .palace.highlight-zhifu {
+            box-shadow: inset 0 0 15px rgba(241, 196, 15, 0.3);
+            border-color: rgba(241, 196, 15, 0.6);
+        }
+
+        /* Compass Mode Styles - Reverted to Square */
+        .qimen-grid.compass-active {
+            gap: 0;
+        }
+
+        .qimen-grid.compass-active .palace {
+            border-radius: 0;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #444;
+            box-shadow: none;
+        }
+
+        /* Ensure Zhi Fu highlight persists in compass mode */
+        .qimen-grid.compass-active .palace.highlight-zhifu {
+            box-shadow: inset 0 0 15px rgba(241, 196, 15, 0.3);
+            border-color: rgba(241, 196, 15, 0.6);
+        }
+
+        /* Palace Content Layout */
+        .p-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .p-body {
+            display: flex;
+            gap: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 2px 0;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .star {
+            color: #e74c3c;
+        }
+
+        /* Heaven Star */
+        .door {
+            color: #f1c40f;
+        }
+
+        /* Man Door */
+        .door.auspicious {
+            color: #f1c40f;
+            text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
+        }
+
+        .god {
+            color: #3498db;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+        }
+
+        /* Deity */
+        .stems {
+            font-size: 0.9rem;
+            color: #ccc;
+            display: flex;
+            gap: 3px;
+            flex-direction: column;
+            position: absolute;
+            bottom: 2px;
+            left: 4px;
+            /* Moved to left */
+            line-height: 1.1;
+            text-align: left;
+            /* Align left */
+        }
+
+        .heaven-stem {
+            color: #e74c3c;
+            /* Guest */
+        }
+
+        .earth-stem {
+            color: #95a5a6;
+            /* Host */
+        }
+
+        .gong-element {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            /* Moved to right */
+            font-size: 0.7rem;
+            color: #afafaf;
+            font-weight: bold;
+        }
+
+        .gong-name {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.7rem;
+            color: #afafaf;
+        }
+
+        /* Compass Overlay Mode */
+        .compass-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .compass-ring {
+            width: 90%;
+            height: 90%;
+            border: 2px solid var(--accent-gold);
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease-out;
+        }
+
+        .compass-mark {
+            position: absolute;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Guide Section */
+        .guide-box {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 3px solid var(--accent-gold);
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Markers */
+        .marker {
+            position: absolute;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            pointer-events: none;
+            z-index: 20;
+            /* Above grid */
+            text-shadow: 0 0 3px #000;
+        }
+
+        /* Adjust marker positions to be outside the rotating area */
+        .marker.top {
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--accent-red);
+        }
+
+        .marker.bottom {
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .marker.left {
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .marker.right {
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Sections */
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            margin: 20px 0 10px 0;
+            border-left: 3px solid var(--accent-gold);
+            padding-left: 10px;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            color: #555;
+            font-size: 0.8rem;
+        }
+
+        /* Markers for Xing, Mu, Po */
+        .marker-badge {
+            font-size: 0.6rem;
+            padding: 1px 3px;
+            border-radius: 3px;
+            color: #fff;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .marker-xing {
+            background-color: #c0392b;
+        }
+
+        /* Red */
+        .marker-mu {
+            background-color: #7f8c8d;
+        }
+
+        /* Orange */
+        .marker-po {
+            background-color: #d35400;
+        }
+
+        /* Interaction Badge */
+        .interaction-badge {
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            padding: 1px 4px;
+            border-radius: 3px;
+            color: #fff;
+            white-space: nowrap;
+            z-index: 5;
+        }
+
+        .interaction-good {
+            background-color: rgba(39, 174, 96, 0.8);
+        }
+
+        /* Green */
+        .interaction-bad {
+            background-color: rgba(192, 57, 43, 0.8);
+        }
+
+        /* Red */
+        .interaction-neutral {
+            background-color: rgba(127, 140, 141, 0.8);
+        }
+
+        /* Grey */
+        .interaction-warn {
+            background-color: rgba(243, 156, 18, 0.8);
+        }
+
+        /* Orange */
+        .interaction-control {
+            background-color: rgba(41, 128, 185, 0.8);
+        }
+
+        /* Blue */
+    </style>
+    <script>
+        //禁止拖動
+        document.addEventListener("dragstart", function (e) {
+            e.preventDefault();
+        });
+
+        //禁用部分組合
+        document.addEventListener("keydown", function (e) {
+            // F12
+            if (e.keyCode == 123) {
+                e.preventDefault();
+                // Ctrl+Shift+I
+            } else if (e.ctrlKey && e.shiftKey && e.keyCode == 73) {
+                // e.preventDefault();
+                // Shift+F10
+            } else if (e.shiftKey && e.keyCode == 121) {
+                e.preventDefault();
+                // Ctrl+U
+            } else if (e.ctrlKey && e.keyCode == 85) {
+                e.preventDefault();
+                // Command+Option+I
+            } else if (e.metaKey && e.altKey && e.keyCode == 73) {
+                e.preventDefault();
+            }
+        });
+
+        //動態頁面標題
+        const OriginTitle = document.title;
+        let titleTime;
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                document.title = 'O_O 頁面已隱藏 - ' + OriginTitle;
+                titleTime = setTimeout(function () {
+                    document.title = OriginTitle;
+                }, 1500);
+                //  clearTimeout(titleTime);
+            } else {
+                document.title = 'ヾ(Ő∀Ő3)ノ歡迎回來！ - ' + OriginTitle;
+                titleTime = setTimeout(function () {
+                    document.title = OriginTitle;
+                }, 1500);
+            }
+        });
+
+
+        //禁止雙擊縮放
+        let lastTouchEndTime = 0;
+        document.addEventListener('touchend', (event) => {
+            const now = new Date().getTime();
+            if ((now - lastTouchEndTime) <= 300) {      // 偵測時間差是否小於 300ms
+                event.preventDefault();
+            }
+            lastTouchEndTime = now;
+        }, false);
+
+        // [Safari only] gesturestart event: multi finger gestures touching
+        document.addEventListener('gesturestart', function (event) {
+            // 阻止兩指縮放畫面
+            event.preventDefault();
+        });
+
+        //列印
+        window.onbeforeprint = function () {
+            location.reload()
+        }
+
+    </script>
+</head>
+
+<body>
+
+    <header>
+        <h1 style="font-weight: bold;">奇門遁甲 · 時空羅盤</h1>
+    </header>
+
+    <div class="container">
+
+        <!-- Control Card -->
+        <div class="card">
+            <div class="controls">
+                <input type="datetime-local" id="datetime-picker">
+                <button class="btn" onclick="resetToNow()">現在</button>
+            </div>
+            <div class="info-row">
+                <span>真太陽時:</span>
+                <span id="solar-time-display" class="highlight">--:--</span>
+            </div>
+            <div class="info-row">
+                <span>四柱:</span>
+                <span id="bazi-display">--</span>
+            </div>
+            <div class="info-row">
+                <span>局數:</span>
+                <span id="ju-shu-display" class="highlight">計算中...</span>
+            </div>
+            <div class="info-row">
+                <span>旬首:</span>
+                <span id="xun-shou-display">--</span>
+            </div>
+            <div class="info-row" style="margin-top: 8px; border-top: 1px solid #333; padding-top: 5px;">
+                <span>節氣:</span>
+                <span id="solar-term-display" style="color: var(--text-muted);">--</span>
+            </div>
+            <div class="info-row">
+                <span>今日甲時:</span>
+                <span id="jia-hours-display" style="color: var(--accent-gold); font-size: 0.9rem;">計算中...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chart Area -->
+    <div class="card" style="position: relative; overflow: visible; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <span class="card-title">奇門盤</span>
+            <button class="btn btn-outline" id="compass-toggle" onclick="toggleCompass()"
+                style="font-size: 0.8rem; padding: 4px 12px;">啟用羅盤</button>
+        </div>
+
+        <div id="chart-container"
+            style="position: relative; width: 85%; max-width: 350px; margin: 30px auto; aspect-ratio: 1;">
+            <!-- Rotating Wrapper -->
+            <div id="rotating-ring"
+                style="width: 100%; height: 100%; position: relative; transition: transform 0.1s ease-out;">
+                <!-- Markers (Inside to rotate) -->
+                <div class="marker top">南</div>
+                <div class="marker bottom">北</div>
+                <div class="marker left">東</div>
+                <div class="marker right">西</div>
+
+                <!-- The Grid -->
+                <div class="qimen-grid" id="qimen-grid" style="width: 100%; height: 100%; margin: 0;">
+                    <!-- Palaces will be generated by JS -->
+                </div>
+            </div>
+
+            <!-- Indicator (Fixed on screen, visible only in compass mode) -->
+            <div id="compass-indicator"
+                style="position: absolute; width: 4px; height: 20px; background: red; top: -30px; left: 50%; transform: translateX(-50%); z-index: 10; display: none; border-radius: 2px;">
+            </div>
+        </div>
+
+        <div class="guide-box" style="margin-top: 30px;">
+            <strong>新手引導：</strong><br>
+            <span style="color:#e74c3c">紅字</span>九星 (天)，<span style="color:#f1c40f">黃字</span>八門 (人)，<span
+                style="color:#3498db">藍字</span>八神 (神)。<br>
+            吉方：生、開、休。天盤干為紅色，地盤干為灰色。
+        </div>
+    </div>
+
+    <!-- Analysis Section -->
+    <div class="section-title">吉凶指南</div>
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">總結</span>
+        </div>
+        <div id="chart-summary" style="font-size: 0.9rem; line-height: 1.6;">
+            <!-- Summary content -->
+        </div>
+    </div>
+    <div class="card" style="margin-top: 15px;">
+        <div class="card-header">
+            <span class="card-title">風險評估</span>
+        </div>
+        <div id="risk-assessment" style="font-size: 0.9rem;"></div>
+    </div>
+    <div class="card" style="margin-top: 15px;">
+        <div class="card-header">
+            <span class="card-title">吉方速查</span>
+        </div>
+        <div id="lucky-directions"></div>
+    </div>
+    <div class="card" style="margin-top: 15px;">
+        <div class="card-header">
+            <span class="card-title">格局分析</span>
+        </div>
+        <div id="pattern-analysis"></div>
+    </div>
+
+    <!-- Beginner Guide Section -->
+    <div class="section-title">新手使用教學</div>
+    <div class="card">
+        <!-- Tabs Header -->
+        <div style="display: flex; border-bottom: 1px solid #444; margin-bottom: 15px;">
+            <div class="tab-btn active" onclick="switchGuideTab('decision')" id="tab-btn-decision"
+                style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid var(--accent-gold); color: var(--accent-gold); font-weight: bold;">
+                選擇困難
+            </div>
+            <div class="tab-btn" onclick="switchGuideTab('travel')" id="tab-btn-travel"
+                style="padding: 8px 15px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text-muted);">
+                出遊吉凶
+            </div>
+        </div>
+
+        <!-- Tab Content: Decision -->
+        <div id="guide-decision" class="guide-content" style="font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+            <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲 · 選擇困難模式》</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
+                簡單五步驟判斷 A/B 兩個選項孰優<br>
+                適用：買車、選公司、選房間、選科系、選兩間店... 只要是 2 選 1 都能用。
+            </p>
+
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+                <strong>⭐ 第 0 步：</strong> 決定好「兩個選項」在心裡，在盤上選擇「你問問題的時間」(或最早開始猶豫的時間)
+            </div>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">① 找到宮位 (最重要)</h4>
+            <p>
+                ● <strong style="color:#f1c40f">生門</strong> 所在的宮 → 代表 <strong>選項 A</strong><br>
+                ● <strong style="color:#f1c40f">開門</strong> 所在的宮 → 代表 <strong>選項 B</strong><br>
+                <span style="font-size:0.8rem; color:#aaa;">(生門=成長/財/發展，開門=開始/行動/進入)</span>
+            </p>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">② 比門 (核心指標)</h4>
+            <p>
+                <strong>吉：</strong> 生 ＞ 開 ＞ 休<br>
+                <strong>平：</strong> 景 ＞ 杜<br>
+                <strong>凶：</strong> 傷 ＞ 驚 ＞ 死<br>
+                📌 比較：誰的門比較吉 → 優先選那邊
+            </p>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">③ 比星 (第二重要)</h4>
+            <p>
+                <strong>吉：</strong> 天輔(最佳) ＞ 天心 ＞ 天任<br>
+                <strong>平：</strong> 天英 ＞ 天柱<br>
+                <strong>凶：</strong> 天芮(瑕疵) ＞ 天蓬(差) ＞ 天沖(亂)<br>
+                📌 比較：誰比較吉 → 加 1 分
+            </p>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">④ 比神 (副作用)</h4>
+            <p>
+                <strong>吉：</strong> 太陰、六合、九天 (佳)<br>
+                <strong>凶：</strong> 白虎(爭吵)、玄武(被騙)<br>
+                📌 比較：誰比較乾淨 → 加分
+            </p>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">⑤ 總結</h4>
+            <p>
+                加總 A 與 B 的優劣，分數高者為佳。<br>
+                <span style="color:#e74c3c; font-size:0.85rem;">※ 若值符落死門或盤勢混亂 → 此時辰不適合問，請換下一時辰重排。</span>
+            </p>
+        </div>
+
+        <!-- Tab Content: Travel -->
+        <div id="guide-travel" class="guide-content"
+            style="display: none; font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+            <h3 style="color:var(--accent-gold); margin-top:0;">📘《奇門遁甲：今天適不適合出去玩？》</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
+                如何使用時盤看旅遊方向吉凶
+            </p>
+
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+                <strong>1️⃣ 確認方位：</strong> 旅遊地相對你家的方位 (北、南、東、西...)<br>
+                <strong>2️⃣ 開盤時間：</strong> 以「出門的那一刻」為準
+            </div>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">3️⃣ 找到對應宮位</h4>
+            <p>
+                北方(坎一)、西南(坤二)、東方(震三)、東南(巽四)<br>
+                中央(中五)、西北(乾六)、西方(兌七)、東北(艮八)、南方(離九)
+            </p>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">4️⃣ 查看該宮八門 (吉凶關鍵)</h4>
+            <ul style="margin: 5px 0 10px 20px; padding: 0;">
+                <li><strong style="color:#f1c40f"> 吉門 (適合出去玩)：</strong><br>
+                    <strong>生門 (最好)：</strong> 玩得順、天氣佳、買到想買的<br>
+                    <strong>開門：</strong> 活動順利、交通順<br>
+                    <strong>休門：</strong> 欣賞型旅遊、自然、散心超好
+                </li>
+                <li><strong style="color:var(--accent-blue);margin-top:5px;">➖ 平門 (普通)：</strong><br>
+                    <strong>景門：</strong> 拍照很好看，但走起來比較累<br>
+                    <strong>杜門：</strong> 慢、塞車、景點關閉、排隊
+                </li>
+                <li style="margin-top:5px;"><strong style="color:#e74c3c">❌ 凶門 (不適合去玩)：</strong><br>
+                    <strong>驚門：</strong> 突發狀況、迷路、資訊混亂<br>
+                    <strong>傷門：</strong> 會累、會受傷、跌倒、身體不舒服<br>
+                    <strong>死門：</strong> 天氣差、玩不開心、白跑一趟
+                </li>
+            </ul>
+
+            <h4 style="color:var(--accent-gold); margin:10px 0 5px 0;">5️⃣ 加分參考</h4>
+            <p>
+                <strong>✔ 1. 九星 (加減分)</strong><br>
+                天輔/天心/天任 → 出遊讚<br>
+                天英 → 景色漂亮<br>
+                天芮 → 容易生病或路線不舒服<br>
+                天沖/天蓬 → 混亂、吵、累、事故
+            </p>
+            <p>
+                <strong>✔ 2. 八神 (副作用)</strong><br>
+                太陰、六合 → 適合文青行程<br>
+                九天 → 適合登山、體能<br>
+                白虎、玄武 → 今天真的不要亂跑
+            </p>
+            <p>
+                <strong>✔ 3. 宮位五行</strong><br>
+                火位 (離九) → 遊玩最嗨<br>
+                木位 (震三/巽四) → 踩點拍照佳<br>
+                水位 (坎一) → 適合休息<br>
+                土位 (坤二/艮八) → 適合輕鬆行程
+            </p>
+
+            <div
+                style="margin-top:15px; padding:10px; border-left:3px solid var(--accent-gold); background:rgba(212, 175, 55, 0.1);">
+                <strong>👉 結論：</strong><br>
+                若該方位落 <strong>吉門</strong> → 今天適合往那裡玩！
+            </div>
+        </div>
+
+        <script>
+            function switchGuideTab(tab) {
+                // Hide all content
+                document.querySelectorAll('.guide-content').forEach(el => el.style.display = 'none');
+                // Show selected content
+                document.getElementById('guide-' + tab).style.display = 'block';
+
+                // Reset tabs
+                document.querySelectorAll('.tab-btn').forEach(el => {
+                    el.style.borderBottom = '2px solid transparent';
+                    el.style.color = 'var(--text-muted)';
+                    el.style.fontWeight = 'normal';
+                });
+                // Activate selected tab
+                const activeBtn = document.getElementById('tab-btn-' + tab);
+                activeBtn.style.borderBottom = '2px solid var(--accent-gold)';
+                activeBtn.style.color = 'var(--accent-gold)';
+                activeBtn.style.fontWeight = 'bold';
+            }
+        </script>
+    </div>
+
+    <!-- Guide Section -->
+    <div class="section-title">說明書</div>
+    <div class="card">
+        <div style="font-size: 0.9rem; line-height: 1.8; color: #ddd;">
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px; margin-top:0;">0.
+                判斷優先順序</h3>
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:5px; margin-bottom:15px;">
+                <div>1️⃣ <strong>天干</strong> (佔吉凶 70%) <span style="color:#aaa; font-size:0.85rem;">天盤表外力、地盤表本質</span>
+                </div>
+                <div style="margin-top:5px;">2️⃣ <strong>八門</strong> (行為目的)</div>
+                <div style="margin-top:5px;">3️⃣ <strong>九星</strong> (趨勢)</div>
+                <div style="margin-top:5px;">4️⃣ <strong>八神</strong> (氣氛)</div>
+                <div style="margin-top:5px;">5️⃣ <strong>宮位五行</strong> (背景)</div>
+            </div>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">1. 四柱
+            </h3>
+            <p>即您的「年、月、日、時」八字。奇門排盤的基礎在於時間。</p>
+            <ul>
+                <li><strong>年柱：</strong> 每年立春（約2月4日）為分界點。立春前屬上一年。</li>
+                <li><strong>月柱：</strong> 以二十四節氣為分界（如驚蟄換月）。</li>
+                <li><strong>日柱：</strong> 每日23:00（子時）更換日柱。</li>
+                <li><strong>時柱：</strong> 每兩小時為一個時辰。</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">2. 八門詳解</h3>
+            <p>八門代表「人事」，是判斷吉凶的關鍵。</p>
+            <ul>
+                <li><strong style="color:#f1c40f">開門 (吉)：</strong> 五行屬金。利於開業、經商、求財、考學、出行。</li>
+                <li><strong style="color:#f1c40f">休門 (吉)：</strong> 五行屬水。利於休養、會見貴人、調解糾紛、婚姻嫁娶。</li>
+                <li><strong style="color:#f1c40f">生門 (吉)：</strong> 五行屬土。大吉之門，利於求財、營造、治病、生產。</li>
+                <li><strong style="color:#e74c3c">傷門 (凶)：</strong> 五行屬木。主受傷、討債、賭博。不利經商出行。</li>
+                <li><strong style="color:#e74c3c">杜門 (平/凶)：</strong> 五行屬木。主隱藏、保密、躲災。不利主動出擊。</li>
+                <li><strong style="color:#e74c3c">景門 (平/吉)：</strong> 五行屬火。主文書、考試、訊息。小心口舌是非。</li>
+                <li><strong style="color:#e74c3c">死門 (大凶)：</strong> 五行屬土。主弔喪、刑戮。諸事不宜，唯宜狩獵弔唁。</li>
+                <li><strong style="color:#e74c3c">驚門 (凶)：</strong> 五行屬金。主驚恐、官司、口舌。宜律師辯護，餘事不宜。</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">3. 九星詳解</h3>
+            <p>九星代表「天時」，影響大環境與時機。</p>
+            <ul>
+                <li><strong style="color:#e74c3c">天心 (吉)：</strong> 利於醫療、管理、策劃。</li>
+                <li><strong style="color:#e74c3c">天輔 (吉)：</strong> 利於教育、考試、升職。</li>
+                <li><strong style="color:#e74c3c">天禽 (大吉)：</strong> 尊貴之星，百事皆吉。</li>
+                <li><strong style="color:#e74c3c">天任 (吉)：</strong> 利於任職、談判、求財。</li>
+                <li><strong style="color:#e74c3c">天沖 (吉/平)：</strong> 利於出征、運動，不利安靜之事。</li>
+                <li><strong style="color:#aaa">天蓬 (凶)：</strong> 主盜賊、破財、水災。</li>
+                <li><strong style="color:#aaa">天芮 (凶)：</strong> 病星，主疾病、問題所在。</li>
+                <li><strong style="color:#aaa">天柱 (凶)：</strong> 主口舌、官非、破壞。</li>
+                <li><strong style="color:#aaa">天英 (平)：</strong> 主血光、火災，也主名聲、社交。</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">4. 八神詳解</h3>
+            <p>八神代表「神助」，是不可見的能量影響。</p>
+            <ul>
+                <li><strong style="color:#3498db">值符 (大吉)：</strong> 眾神之首，百惡消散，最吉之神。</li>
+                <li><strong style="color:#3498db">騰蛇 (凶)：</strong> 主虛驚怪異、反覆無常、夢魘。</li>
+                <li><strong style="color:#3498db">太陰 (吉)：</strong> 主密謀、策劃、陰佑、隱蔽。</li>
+                <li><strong style="color:#3498db">六合 (吉)：</strong> 主婚姻、交易、仲介、合作。</li>
+                <li><strong style="color:#3498db">白虎 (大凶)：</strong> 主血光、車禍、刑傷、爭鬥。</li>
+                <li><strong style="color:#3498db">玄武 (凶)：</strong> 主盜竊、口舌、小人、曖昧。</li>
+                <li><strong style="color:#3498db">九地 (吉)：</strong> 主屯兵、埋伏、長久、安靜。</li>
+                <li><strong style="color:#3498db">九天 (吉)：</strong> 主揚兵、遠行、名聲、動態。</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">5. 十天干</h3>
+            <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 20px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #555; color: var(--accent-gold);">
+                        <th style="padding: 5px; text-align: left;">天干</th>
+                        <th style="padding: 5px; text-align: left;">陰陽</th>
+                        <th style="padding: 5px; text-align: left;">五行</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 5px;">甲</td>
+                        <td style="padding: 5px;">陽</td>
+                        <td style="padding: 5px;">木</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">乙</td>
+                        <td style="padding: 5px;">陰</td>
+                        <td style="padding: 5px;">木</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">丙</td>
+                        <td style="padding: 5px;">陽</td>
+                        <td style="padding: 5px;">火</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">丁</td>
+                        <td style="padding: 5px;">陰</td>
+                        <td style="padding: 5px;">火</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">戊</td>
+                        <td style="padding: 5px;">陽</td>
+                        <td style="padding: 5px;">土</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">己</td>
+                        <td style="padding: 5px;">陰</td>
+                        <td style="padding: 5px;">土</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">庚</td>
+                        <td style="padding: 5px;">陽</td>
+                        <td style="padding: 5px;">金</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">辛</td>
+                        <td style="padding: 5px;">陰</td>
+                        <td style="padding: 5px;">金</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">壬</td>
+                        <td style="padding: 5px;">陽</td>
+                        <td style="padding: 5px;">水</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">癸</td>
+                        <td style="padding: 5px;">陰</td>
+                        <td style="padding: 5px;">水</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">6. 十二地支</h3>
+            <table style="width:100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 20px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #555; color: var(--accent-gold);">
+                        <th style="padding: 5px; text-align: left;">地支</th>
+                        <th style="padding: 5px; text-align: left;">生肖</th>
+                        <th style="padding: 5px; text-align: left;">五行</th>
+                        <th style="padding: 5px; text-align: left;">方位</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 5px;">子</td>
+                        <td style="padding: 5px;">鼠</td>
+                        <td style="padding: 5px;">水</td>
+                        <td style="padding: 5px;">北</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">丑</td>
+                        <td style="padding: 5px;">牛</td>
+                        <td style="padding: 5px;">土</td>
+                        <td style="padding: 5px;">東北</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">寅</td>
+                        <td style="padding: 5px;">虎</td>
+                        <td style="padding: 5px;">木</td>
+                        <td style="padding: 5px;">東北</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">卯</td>
+                        <td style="padding: 5px;">兔</td>
+                        <td style="padding: 5px;">木</td>
+                        <td style="padding: 5px;">東</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">辰</td>
+                        <td style="padding: 5px;">龍</td>
+                        <td style="padding: 5px;">土</td>
+                        <td style="padding: 5px;">東南</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">巳</td>
+                        <td style="padding: 5px;">蛇</td>
+                        <td style="padding: 5px;">火</td>
+                        <td style="padding: 5px;">東南</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">午</td>
+                        <td style="padding: 5px;">馬</td>
+                        <td style="padding: 5px;">火</td>
+                        <td style="padding: 5px;">南</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">未</td>
+                        <td style="padding: 5px;">羊</td>
+                        <td style="padding: 5px;">土</td>
+                        <td style="padding: 5px;">西南</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">申</td>
+                        <td style="padding: 5px;">猴</td>
+                        <td style="padding: 5px;">金</td>
+                        <td style="padding: 5px;">西南</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">酉</td>
+                        <td style="padding: 5px;">雞</td>
+                        <td style="padding: 5px;">金</td>
+                        <td style="padding: 5px;">西</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">戌</td>
+                        <td style="padding: 5px;">狗</td>
+                        <td style="padding: 5px;">土</td>
+                        <td style="padding: 5px;">西北</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">亥</td>
+                        <td style="padding: 5px;">豬</td>
+                        <td style="padding: 5px;">水</td>
+                        <td style="padding: 5px;">西北</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">7. 十二時辰宜忌</h3>
+            <div style="font-size: 0.9rem; line-height: 1.6;">
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">子時（23:00 – 01:00）——屬水，陰氣最盛</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 靜心、冥想、洗滌、淨化、構思、寫作<br>
+                    <span style="color: #c0392b;">忌：</span> 激烈運動、大吵大鬧、情緒爆發、飲酒過量
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">丑時（01:00 – 03:00）——屬土，養精蓄銳</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 熟睡、養肝排毒（傳統觀念）、閱讀、安靜活動<br>
+                    <span style="color: #c0392b;">忌：</span> 熬夜工作、重口味飲食
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">寅時（03:00 – 05:00）——屬木，陽氣初生</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 準備新計畫、祈福、靜坐、早起運動（輕度）<br>
+                    <span style="color: #c0392b;">忌：</span> 高壓工作、大量咖啡因
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">卯時（05:00 – 07:00）——屬木，一日開始</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 早起、伸展、散步、制定今日目標<br>
+                    <span style="color: #c0392b;">忌：</span> 賴床（依傳統說法會壓運）、暴飲暴食的早餐
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">辰時（07:00 – 09:00）——屬土，活力上升</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 上工、讀書、開會、談合作、提升專注力的事<br>
+                    <span style="color: #c0392b;">忌：</span> 遲到、拖延重要事務
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">巳時（09:00 – 11:00）——屬火，效率最佳</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 面試、業務談判、重要決定<br>
+                    <span style="color: #c0392b;">忌：</span> 情緒性決策、過度承諾
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">午時（11:00 – 13:00）——屬火，陽極而生陰</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 用餐、適度休息、暫停工作<br>
+                    <span style="color: #c0392b;">忌：</span> 長時間曝曬、過度操勞
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">未時（13:00 – 15:00）——屬土，身心過渡期</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 放鬆、創意發想、緩步運動<br>
+                    <span style="color: #c0392b;">忌：</span> 緊急重要談判、情緒衝動
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">申時（15:00 – 17:00）——屬金，腦力回升</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 處理複雜問題、文件、分析、寫作、商業交易<br>
+                    <span style="color: #c0392b;">忌：</span> 難以集中精神者避免重任
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">酉時（17:00 – 19:00）——屬金，收斂</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 用餐、家庭活動、反思今天<br>
+                    <span style="color: #c0392b;">忌：</span> 過度加班、高油脂飲食
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">戌時（19:00 – 21:00）——屬土，適合沉澱</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 學習、讀書、療癒類活動、整理環境<br>
+                    <span style="color: #c0392b;">忌：</span> 過度娛樂、情緒消耗
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-gold);">亥時（21:00 – 23:00）——屬水，收心安神</strong><br>
+                    <span style="color: #27ae60;">宜：</span> 放鬆、冥想、睡前準備、靜態休閒<br>
+                    <span style="color: #c0392b;">忌：</span> 藍光刺激、大量進食
+                </div>
+            </div>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">8. 九宮八卦</h3>
+            <p>九宮代表「地利」，是盤面的基礎方位與五行屬性。</p>
+            <ul>
+                <li><strong>坎一 (北/水)：</strong> 智慧、流動、陷阱。</li>
+                <li><strong>坤二 (西南/土)：</strong> 包容、大地、緩慢。</li>
+                <li><strong>震三 (東/木)：</strong> 啟動、衝擊、發生。</li>
+                <li><strong>巽四 (東南/木)：</strong> 交易、利市、不穩。</li>
+                <li><strong>中五 (中/土)：</strong> 核心、極點 (通常寄於坤二)。</li>
+                <li><strong>乾六 (西北/金)：</strong> 權力、領導、剛健。</li>
+                <li><strong>兌七 (西/金)：</strong> 口舌、缺損、變革。</li>
+                <li><strong>艮八 (東北/土)：</strong> 停止、阻隔、靠山。</li>
+                <li><strong>離九 (南/火)：</strong> 文書、顯眼、虛幻。</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">9. 局數與節氣</h3>
+            <p>奇門遁甲分為「陽遁」與「陰遁」，共18局。</p>
+            <ul>
+                <li><strong>陽遁：</strong> 冬至後至夏至前（能量上升期）。</li>
+                <li><strong>局數：</strong> 根據當日的節氣與日干支計算，決定了局面的基本架構。</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">10. 旬首</h3>
+            <p>「旬」是10個時辰的週期，「旬首」是這10個時辰的領隊（一定是甲）。<br>
+                例如：甲子旬的10個時辰內，旬首都是「甲子（戊）」。<br>
+                <strong>作用：</strong> 旬首決定了「值符（大將）」與「值使（傳令官）」的位置，是排盤的核心。
+            </p>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">11. 天地盤干解讀</h3>
+            <p>左下角的兩個字（上為天盤，下為地盤）是判斷吉凶的重要依據。</p>
+            <ul>
+                <li><strong>地盤天干 (下)：</strong> 事情的本質（固定）。代表事件本體、根本狀況與真實面。</li>
+                <li><strong>天盤天干 (上)：</strong> 事情的變化（動態）。代表外在因素、現在的情況，以及結果趨勢。</li>
+            </ul>
+            <p><strong>天干相生相剋（吉凶判斷核心）：</strong></p>
+            <ul>
+                <li><span style="color:#27ae60;">天盤 生 地盤</span> → <strong>順利、助力</strong> (外在環境幫助本體)</li>
+                <li><span style="color:#e74c3c;">天盤 剋 地盤</span> → <strong>阻礙、麻煩、壓力</strong> (外在環境壓迫本體)</li>
+                <li><span style="color:#f39c12;">地盤 生 天盤</span> → <strong>消耗、費力</strong> (本體需付出以支撐外在)</li>
+                <li><span style="color:#3498db;">地盤 剋 天盤</span> → <strong>主導權</strong> (本體能壓住情勢，雖有挑戰但能掌控)</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">12. 盤面解讀</h3>
+            <p>九宮格中，每一格（宮）代表一個方位。看盤重點：</p>
+            <ul>
+                <li><span style="color:#3498db">八神 (頂部藍字)</span>：神助力量。<strong>值符</strong>最吉。</li>
+                <li><span style="color:#e74c3c">九星 (中間紅字)</span>：天時地利。</li>
+                <li><span style="color:#f1c40f">八門 (中間黃字)</span>：人事行動。</li>
+                <li><span style="color:#ccc">天地盤干 (右下角)</span>：上字為天盤，下字為地盤。</li>
+            </ul>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">13. 甲時</h3>
+            <p>每日有12個時辰，其中天干為「甲」的時辰稱為甲時（如甲子時、甲戌時...）。<br>
+                此時辰是能量重啟的時刻，也是「旬首」變換的時刻，適合進行重要的啟動儀式或決策。</p>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">14. 羅盤模式</h3>
+            <p>點擊「啟用羅盤」後，平放手機。盤面會自動旋轉，使盤上的「南」對準真實的南方。<br>
+                <strong>注意：</strong> iOS 需在 HTTPS 環境下使用。
+            </p>
+
+            <h3 style="color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:5px;">15. 特殊標示說明</h3>
+            <p>盤面上可能出現的小標籤：</p>
+            <ul>
+                <li><span
+                        style="background-color:#c0392b; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">刑</span>
+                    <strong>擊刑 (Ji Xing)：</strong> 天盤干與地盤宮位形成相刑。代表極度難受、彆扭、受折磨。
+                </li>
+                <li><span
+                        style="background-color:#7f8c8d; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">墓</span>
+                    <strong>入墓 (Ru Mu)：</strong> 天盤干進入墓庫宮位。代表能量被困住、發揮不出來、無力。
+                </li>
+                <li><span
+                        style="background-color:#d35400; color:white; padding:1px 3px; border-radius:3px; font-size:0.8rem;">迫</span>
+                    <strong>門迫 (Men Po)：</strong> 門的五行剋宮位五行。代表該門的吉凶能量被打折，甚至轉凶 (吉門不吉，凶門更凶)。
+                </li>
+                <li style="margin-top:8px;"><strong>宮位頂端標籤 (天地盤關係)：</strong>
+                    <div style="margin-top:5px; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                        <div><span
+                                style="background-color:rgba(39, 174, 96, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">天生</span>
+                            助力大，順利</div>
+                        <div><span
+                                style="background-color:rgba(192, 57, 43, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">天剋</span>
+                            壓力大，阻礙</div>
+                        <div><span
+                                style="background-color:rgba(243, 156, 18, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">地生</span>
+                            需付出，較累</div>
+                        <div><span
+                                style="background-color:rgba(41, 128, 185, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">地剋</span>
+                            能掌控，主導</div>
+                        <div><span
+                                style="background-color:rgba(127, 140, 141, 0.8); color:white; padding:1px 4px; border-radius:3px; font-size:0.6rem;">比和</span>
+                            平穩，和諧</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div style="height: 20px; width: 100%;"></div>
+
+    <footer>
+
+    </footer>
+    </div>
+
+    <script>
+
+        // 在檔案頂端加
+        let lastRiskScore = 0;
+        // --- Constants & Data ---
+        const TIAN_GAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        const DI_ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        const BA_GUA = ['坎', '坤', '震', '巽', '中', '乾', '兌', '艮', '離'];
+        const LUO_SHU = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        const PALACE_MAP = {
+            4: 0, 9: 1, 2: 2,
+            3: 3, 5: 4, 7: 5,
+            8: 6, 1: 7, 6: 8
+        };
+        const PALACE_NAMES = {
+            1: '坎一', 2: '坤二', 3: '震三', 4: '巽四', 5: '中五', 6: '乾六', 7: '兌七', 8: '艮八', 9: '離九'
+        };
+        const DIRECTION_NAMES = {
+            1: '北', 2: '西南', 3: '東', 4: '東南', 5: '中', 6: '西北', 7: '西', 8: '東北', 9: '南'
+        };
+
+        const JIA_ZI = [];
+        for (let i = 0; i < 60; i++) JIA_ZI.push(TIAN_GAN[i % 10] + DI_ZHI[i % 12]);
+
+        const NINE_STARS = ['天蓬', '天芮', '天沖', '天輔', '天禽', '天心', '天柱', '天任', '天英'];
+        const ORIGIN_STARS = {
+            1: '天蓬', 2: '天芮', 3: '天沖', 4: '天輔', 5: '天禽', 6: '天心', 7: '天柱', 8: '天任', 9: '天英'
+        };
+        const STAR_RING = ['天蓬', '天任', '天沖', '天輔', '天英', '天芮', '天柱', '天心'];
+
+        const EIGHT_DOORS = ['休門', '死門', '傷門', '杜門', '開門', '驚門', '生門', '景門'];
+        const ORIGIN_DOORS = {
+            1: '休門', 2: '死門', 3: '傷門', 4: '杜門', 6: '開門', 7: '驚門', 8: '生門', 9: '景門'
+        };
+        const DOOR_RING = ['休門', '生門', '傷門', '杜門', '景門', '死門', '驚門', '開門'];
+
+        const EIGHT_GODS = ['值符', '騰蛇', '太陰', '六合', '白虎', '玄武', '九地', '九天'];
+
+        const SOLAR_TERMS_C_21 = [
+            3.87, 18.73, 5.63, 20.646, 4.81, 20.1, 5.52, 21.04, 5.678, 21.37, 7.108, 22.83,
+            7.5, 23.13, 7.646, 23.042, 8.318, 23.438, 7.438, 22.36, 7.18, 21.94, 5.4055, 20.12
+        ];
+        const SOLAR_TERMS_NAME = [
+            "立春", "雨水", "驚蟄", "春分", "清明", "穀雨", "立夏", "小滿", "芒種", "夏至", "小暑", "大暑",
+            "立秋", "處暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪", "冬至", "小寒", "大寒"
+        ];
+
+        const JU_SHU_MAP = [
+            [8, 5, 2], [9, 6, 3], [1, 7, 4], [3, 9, 6], [4, 1, 7], [5, 2, 8],
+            [4, 1, 7], [5, 2, 8], [6, 3, 9], [9, 3, 6], [8, 2, 5], [7, 1, 4],
+            [2, 5, 8], [1, 4, 7], [9, 3, 6], [7, 1, 4], [6, 9, 3], [5, 8, 2],
+            [6, 9, 3], [5, 8, 2], [4, 7, 1], [1, 7, 4], [2, 8, 5], [3, 9, 6]
+        ];
+
+        const PALACE_ELEMENTS = { 1: '水', 2: '土', 3: '木', 4: '木', 5: '土', 6: '金', 7: '金', 8: '土', 9: '火' };
+        const STEM_ELEMENTS = { '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土', '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水' };
+        const PALACE_BRANCHES = {
+            1: [0],
+            8: [1, 2],
+            3: [3],
+            4: [4, 5],
+            9: [6],
+            2: [7, 8],
+            7: [9],
+            6: [10, 11]
+        };
+
+        let currentState = {
+            date: new Date(),
+            solarTime: new Date(),
+            location: null,
+            chart: null
+        };
+
+        // --- Astronomical Calculation Helpers (Meeus Simplified) ---
+        function getJulianDate(date) {
+            return (date.getTime() / 86400000) + 2440587.5;
+        }
+
+        function getJulianCentury(date) {
+            const JD = getJulianDate(date);
+            return (JD - 2451545.0) / 36525.0;
+        }
+
+        function toRad(deg) { return deg * Math.PI / 180.0; }
+        function toDeg(rad) { return rad * 180.0 / Math.PI; }
+
+        function getSolarApparentLongitude(date) {
+            const T = getJulianCentury(date);
+
+            // Mean Longitude (L0)
+            let L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+            L0 = L0 % 360;
+            if (L0 < 0) L0 += 360;
+
+            // Mean Anomaly (M)
+            let M = 357.52911 + 35999.05029 * T - 0.0001537 * T * T;
+            M = M % 360;
+            if (M < 0) M += 360;
+            const Mrad = toRad(M);
+
+            // Equation of Center (C)
+            const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mrad)
+                + (0.019993 - 0.000101 * T) * Math.sin(2 * Mrad)
+                + 0.000289 * Math.sin(3 * Mrad);
+
+            // True Longitude
+            const trueLong = L0 + C;
+
+            // Aberration & Nutation (Simplified)
+            const Omega = 125.04 - 1934.136 * T;
+            const apparent = trueLong - 0.00569 - 0.00478 * Math.sin(toRad(Omega));
+
+            return (apparent % 360 + 360) % 360;
+        }
+
+        // Get Solar Term Index based on exact time (0 = Lichun/315deg)
+        function getSolarTerm(date) {
+            const L = getSolarApparentLongitude(date);
+            // Lichun is at 315 degrees.
+            // We want index 0 for [315, 330), index 1 for [330, 345)...
+            // Formula: ((L - 315 + 360) % 360) / 15
+            let offset = (L - 315 + 360) % 360;
+            return Math.floor(offset / 15);
+        }
+
+        // Find exact transition time for a specific term index in a given year
+        function getTermTransitionDate(year, termIdx) {
+            // Target angle: termIdx 0 (Lichun) -> 315
+            let targetAngle = (315 + termIdx * 15) % 360;
+
+            // Approx dates for initial guess (Month, Day)
+            // 0:Lichun(Feb), ... 22:Xiaohan(Jan), 23:Dahan(Jan)
+            const approxDates = [
+                [2, 4], [2, 19], [3, 6], [3, 21], [4, 5], [4, 20],
+                [5, 6], [5, 21], [6, 6], [6, 21], [7, 7], [7, 23],
+                [8, 8], [8, 23], [9, 8], [9, 23], [10, 8], [10, 23],
+                [11, 7], [11, 22], [12, 7], [12, 22], [1, 6], [1, 20]
+            ];
+            const [m, d] = approxDates[termIdx];
+
+            // Construct search date. 
+            // Note: For terms 22(Xiaohan) and 23(Dahan), they are in Jan.
+            // If we pass year 2024, term 22, we mean Jan 2024.
+            // If we pass year 2024, term 0, we mean Feb 2024.
+            let searchDate = new Date(year, m - 1, d, 12, 0, 0);
+
+            // Iterative refinement
+            for (let i = 0; i < 10; i++) {
+                const L = getSolarApparentLongitude(searchDate);
+                let diff = L - targetAngle;
+                // Handle wrap around 360
+                if (diff > 180) diff -= 360;
+                if (diff < -180) diff += 360;
+
+                if (Math.abs(diff) < 0.0005) break; // ~1 min precision
+
+                // Rate: Sun moves ~0.9856 deg/day
+                const daysDelta = diff / 0.9856;
+                searchDate = new Date(searchDate.getTime() - daysDelta * 86400000);
+            }
+            return searchDate;
+        }
+
+        function getJuShu(date, solarTermIdx, dayGanZhiIdx) {
+            // 1. 判斷陰陽遁
+            // 冬至(21) ~ 芒種(8) 為陽遁
+            // 夏至(9) ~ 大雪(20) 為陰遁
+            let isYang = true;
+            let safeTermIdx = solarTermIdx % 24;
+            if (safeTermIdx >= 9 && safeTermIdx <= 20) isYang = false;
+
+            // 2. 符頭+己日換局法 (Fu Tou + Ji Day Shift Logic)
+
+            // A. 找符頭 (Find Head of Xun)
+            // dayGanZhiIdx 是 0-59 的日柱索引
+            const fuTouIdx = dayGanZhiIdx - (dayGanZhiIdx % 10);
+            const fuTouBranch = fuTouIdx % 12; // 符頭的地支 (只會是 子0, 寅2, 辰4, 午6, 申8, 戌10)
+
+            // B. 定符頭的原始三元 (Base Yuan) - 修正後的正確順序
+            // 規則：子午=上, 寅申=中, 辰戌=下
+            let baseYuan = 0;
+
+            if (fuTouBranch === 0 || fuTouBranch === 6) {
+                baseYuan = 0; // 甲子、甲午 -> 上元
+            } else if (fuTouBranch === 2 || fuTouBranch === 8) {
+                baseYuan = 1; // 甲寅、甲申 -> 中元
+            } else {
+                baseYuan = 2; // 甲辰、甲戌 -> 下元 (這修復了11/05的問題)
+            }
+
+            // C. 判斷是否為後半旬 (己~癸)
+            // 天干索引：0=甲, 4=戊, 5=己, 9=癸
+            const dayStem = dayGanZhiIdx % 10;
+            let currentYuan = baseYuan;
+
+            if (dayStem >= 5) {
+                // 己日以後，切換到下一個元 (Cycle: 0->1->2->0)
+                currentYuan = (baseYuan + 1) % 3;
+            }
+
+            // 3. 取局數
+            const bureaus = JU_SHU_MAP[safeTermIdx];
+            if (!bureaus) return { isYang: true, ju: 1 };
+
+            return { isYang: isYang, ju: bureaus[currentYuan] };
+        }
+
+        function calculateChart(date, solarTime) {
+            const yearIdx = getGanZhiYear(solarTime);
+            const monthIdx = getGanZhiMonth(solarTime, yearIdx);
+            const dayIdx = getGanZhiDay(solarTime);
+            const hourIdx = getGanZhiHour(solarTime, dayIdx);
+
+            const termIdx = getSolarTerm(solarTime);
+            const { isYang, ju } = getJuShu(solarTime, termIdx, dayIdx);
+
+            const STEM_ORDER = ['戊', '己', '庚', '辛', '壬', '癸', '丁', '丙', '乙'];
+            let diPan = {};
+
+            for (let i = 0; i < 9; i++) {
+                let stem = STEM_ORDER[i];
+                let palace;
+                if (isYang) {
+                    let p = (ju + i);
+                    while (p > 9) p -= 9;
+                    palace = p;
+                } else {
+                    let p = (ju - i);
+                    while (p < 1) p += 9;
+                    palace = p;
+                }
+                diPan[palace] = stem;
+            }
+
+            const xunShouStr = getXunShou(hourIdx);
+            const XUN_MAP = {
+                '甲子': '戊', '甲戌': '己', '甲申': '庚',
+                '甲午': '辛', '甲辰': '壬', '甲寅': '癸'
+            };
+            const leaderStem = XUN_MAP[xunShouStr];
+
+            let leaderPalace = 0;
+            for (let p in diPan) {
+                if (diPan[p] === leaderStem) {
+                    leaderPalace = parseInt(p);
+                    break;
+                }
+            }
+
+            const hourGan = hourIdx % 10;
+            let targetStem = TIAN_GAN[hourGan];
+            if (targetStem === '甲') targetStem = leaderStem;
+
+            let hourPalace = 0;
+            for (let p in diPan) {
+                if (diPan[p] === targetStem) {
+                    hourPalace = parseInt(p);
+                    break;
+                }
+            }
+            if (hourPalace === 5) hourPalace = 2;
+
+            const originStarName = ORIGIN_STARS[leaderPalace === 5 ? 2 : leaderPalace];
+            const startIdx = STAR_RING.indexOf(originStarName);
+            const PALACE_TO_RING = { 1: 0, 8: 1, 3: 2, 4: 3, 9: 4, 2: 5, 7: 6, 6: 7 };
+            const targetRingIdx = PALACE_TO_RING[hourPalace];
+
+            let offset = targetRingIdx - startIdx;
+            if (offset < 0) offset += 8;
+
+            let tianPan = {};
+            let tianPanStems = {};
+
+            for (let i = 0; i < 8; i++) {
+                const star = STAR_RING[i];
+                const newRingIdx = (i + offset) % 8;
+                const RING_TO_PALACE = [1, 8, 3, 4, 9, 2, 7, 6];
+                const p = RING_TO_PALACE[newRingIdx];
+                tianPan[p] = star;
+                const originalP = RING_TO_PALACE[i];
+                tianPanStems[p] = diPan[originalP];
+            }
+
+            const originDoorName = ORIGIN_DOORS[leaderPalace === 5 ? 2 : leaderPalace];
+            let doorStartP = leaderPalace;
+            if (doorStartP === 5) doorStartP = 2;
+
+            let steps = hourIdx % 10;
+            let zhiShiP = doorStartP;
+            if (isYang) {
+                zhiShiP = (doorStartP + steps);
+                while (zhiShiP > 9) zhiShiP -= 9;
+            } else {
+                zhiShiP = (doorStartP - steps);
+                while (zhiShiP < 1) zhiShiP += 9;
+            }
+            if (zhiShiP === 5) zhiShiP = 2;
+
+            const doorStartIdx = DOOR_RING.indexOf(originDoorName);
+            const doorTargetIdx = PALACE_TO_RING[zhiShiP];
+            let doorOffset = doorTargetIdx - doorStartIdx;
+            if (doorOffset < 0) doorOffset += 8;
+
+            let renPan = {};
+            for (let i = 0; i < 8; i++) {
+                const door = DOOR_RING[i];
+                const newRingIdx = (i + doorOffset) % 8;
+                const RING_TO_PALACE = [1, 8, 3, 4, 9, 2, 7, 6];
+                const p = RING_TO_PALACE[newRingIdx];
+                renPan[p] = door;
+            }
+
+            const deityTargetIdx = PALACE_TO_RING[hourPalace];
+            let shenPan = {};
+            for (let i = 0; i < 8; i++) {
+                let ringIdx;
+                if (isYang) {
+                    ringIdx = (deityTargetIdx + i) % 8;
+                } else {
+                    ringIdx = (deityTargetIdx - i);
+                    if (ringIdx < 0) ringIdx += 8;
+                }
+                const RING_TO_PALACE = [1, 8, 3, 4, 9, 2, 7, 6];
+                const p = RING_TO_PALACE[ringIdx];
+                shenPan[p] = EIGHT_GODS[i];
+            }
+
+            return {
+                diPan, tianPan, tianPanStems, renPan, shenPan,
+                meta: {
+                    isYang, ju,
+                    xunShou: xunShouStr,
+                    pillars: [JIA_ZI[yearIdx], JIA_ZI[monthIdx], JIA_ZI[dayIdx], JIA_ZI[hourIdx]],
+                    dayIdx: dayIdx,
+                    hourIdx: hourIdx,
+                    zhiFuPalace: hourPalace,
+                    zhiShiPalace: zhiShiP,
+                    termName: SOLAR_TERMS_NAME[termIdx],
+                    termIdx: termIdx
+                }
+            };
+        }
+
+        function getSolarTermInfo(currentTermIdx, date) {
+            const nextIdx = (currentTermIdx + 1) % 24;
+
+            let year = date.getFullYear();
+
+            // Find next term date
+            let nextDate = getTermTransitionDate(year, nextIdx);
+            // If nextDate is earlier than now (e.g. we are in Dec, next is Jan of this year), add 1 year
+            if (nextDate.getTime() < date.getTime()) {
+                nextDate = getTermTransitionDate(year + 1, nextIdx);
+            }
+
+            // Find current term date (start of current term)
+            let currDate = getTermTransitionDate(year, currentTermIdx);
+            // If currDate is later than now (e.g. we are in Jan, current term is from Dec last year), subtract 1 year
+            if (currDate.getTime() > date.getTime()) {
+                currDate = getTermTransitionDate(year - 1, currentTermIdx);
+            }
+
+            const diffTimeNext = nextDate.getTime() - date.getTime();
+            const daysToNext = Math.ceil(diffTimeNext / (1000 * 60 * 60 * 24));
+
+            const diffTimeCurr = date.getTime() - currDate.getTime();
+            const daysPassed = Math.floor(diffTimeCurr / (1000 * 60 * 60 * 24));
+
+            return {
+                daysToNext: daysToNext > 0 ? daysToNext : 0,
+                daysPassed: daysPassed >= 0 ? daysPassed : 0,
+                nextTermName: SOLAR_TERMS_NAME[nextIdx]
+            };
+        }
+
+        function renderChart(data) {
+            const grid = document.getElementById('qimen-grid');
+            grid.innerHTML = '';
+
+            const LAYOUT = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+
+            // Logic Maps
+            const JI_XING_MAP = {
+                '戊': [3], '己': [2], '庚': [8], '辛': [9], '壬': [4], '癸': [4]
+            };
+            const RU_MU_MAP = {
+                '乙': [2], '丙': [6], '戊': [6], '丁': [6], '己': [6],
+                '庚': [8], '辛': [8], '壬': [4], '癸': [4]
+            };
+            const DOOR_ELEMENTS = {
+                '休門': '水', '死門': '土', '傷門': '木', '杜門': '木',
+                '開門': '金', '驚門': '金', '生門': '土', '景門': '火'
+            };
+            const PALACE_ELEMENTS_MAP = { 1: '水', 2: '土', 3: '木', 4: '木', 5: '土', 6: '金', 7: '金', 8: '土', 9: '火' };
+            const STEM_ELEMENTS = { '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土', '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水' };
+
+            // Helper to check element clash (A overcomes B)
+            function isOvercoming(elA, elB) {
+                if (elA === '金' && elB === '木') return true;
+                if (elA === '木' && elB === '土') return true;
+                if (elA === '土' && elB === '水') return true;
+                if (elA === '水' && elB === '火') return true;
+                if (elA === '火' && elB === '金') return true;
+                return false;
+            }
+
+            function isGenerating(elA, elB) {
+                if (elA === '金' && elB === '水') return true;
+                if (elA === '水' && elB === '木') return true;
+                if (elA === '木' && elB === '火') return true;
+                if (elA === '火' && elB === '土') return true;
+                if (elA === '土' && elB === '金') return true;
+                return false;
+            }
+
+            LAYOUT.forEach(p => {
+                const cell = document.createElement('div');
+                cell.className = 'palace';
+                if (p === 5) cell.className += ' center';
+
+                if (p === data.meta.zhiFuPalace) {
+                    cell.classList.add('highlight-zhifu');
+                }
+
+                if (p === 5) {
+                    cell.innerHTML = `<div class="p-body" style="color:#666; font-size:0.8rem;">中五宮<br>寄坤二</div>`;
+                } else {
+                    const star = data.tianPan[p] || '';
+                    const door = data.renPan[p] || '';
+                    const god = data.shenPan[p] || '';
+                    const heavenStem = data.tianPanStems[p] || '';
+                    const earthStem = data.diPan[p] || '';
+
+                    let doorClass = 'door';
+                    if (['生門', '開門', '休門'].includes(door)) doorClass += ' auspicious';
+
+                    // --- Calculate Markers ---
+                    let badges = '';
+
+                    // 1. Ji Xing (Heaven Stem vs Palace)
+                    if (JI_XING_MAP[heavenStem] && JI_XING_MAP[heavenStem].includes(p)) {
+                        badges += `<span class="marker-badge marker-xing">刑</span>`;
+                    }
+
+                    // 2. Ru Mu (Heaven Stem vs Palace)
+                    if (RU_MU_MAP[heavenStem] && RU_MU_MAP[heavenStem].includes(p)) {
+                        badges += `<span class="marker-badge marker-mu">墓</span>`;
+                    }
+
+                    // 3. Men Po (Door Element overcomes Palace Element)
+                    const doorEl = DOOR_ELEMENTS[door];
+                    const palaceEl = PALACE_ELEMENTS_MAP[p];
+                    if (doorEl && palaceEl && isOvercoming(doorEl, palaceEl)) {
+                        badges += `<span class="marker-badge marker-po">迫</span>`;
+                    }
+
+                    // --- Calculate Interaction (Heaven vs Earth) ---
+                    let interactionHTML = '';
+                    if (heavenStem && earthStem) {
+                        const hEl = STEM_ELEMENTS[heavenStem];
+                        const eEl = STEM_ELEMENTS[earthStem];
+                        let iText = '';
+                        let iClass = '';
+
+                        if (hEl === eEl) {
+                            iText = '比和:平';
+                            iClass = 'interaction-neutral';
+                        } else if (isGenerating(hEl, eEl)) {
+                            iText = '天生:順'; // Heaven generates Earth
+                            iClass = 'interaction-good';
+                        } else if (isOvercoming(hEl, eEl)) {
+                            iText = '天剋:礙'; // Heaven overcomes Earth
+                            iClass = 'interaction-bad';
+                        } else if (isGenerating(eEl, hEl)) {
+                            iText = '地生:累'; // Earth generates Heaven
+                            iClass = 'interaction-warn';
+                        } else if (isOvercoming(eEl, hEl)) {
+                            iText = '地剋:制'; // Earth overcomes Heaven
+                            iClass = 'interaction-control';
+                        }
+
+                        if (iText) {
+                            interactionHTML = `<div class="interaction-badge ${iClass}">${iText}</div>`;
+                        }
+                    }
+
+                    cell.innerHTML = `
+                    ${interactionHTML}
+                    <div class="gong-element">${PALACE_ELEMENTS_MAP[p]}</div>
+                    <div class="god">${god}</div>
+                    <div class="p-body">
+                        <div class="star">${star}</div>
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                            <div class="${doorClass}">${door}</div>
+                            <div style="display:flex; gap:2px; margin-top:2px;">${badges}</div>
+                        </div>
+                    </div>
+                    <div class="stems">
+                        <span class="heaven-stem">${heavenStem}</span>
+                        <span class="earth-stem">${earthStem}</span>
+                    </div>
+                    <div class="gong-name">${PALACE_NAMES[p]}</div>
+                `;
+                }
+                grid.appendChild(cell);
+            });
+
+            // ... rest of renderChart ...
+
+            const termInfo = getSolarTermInfo(data.meta.termIdx, currentState.date);
+            const termText = `${data.meta.termName} (已過 ${termInfo.daysPassed} 天, ${termInfo.daysToNext} 天後${termInfo.nextTermName})`;
+
+            document.getElementById('bazi-display').innerText = data.meta.pillars.join(' ');
+            document.getElementById('ju-shu-display').innerText = `${data.meta.isYang ? '陽' : '陰'}遁 ${data.meta.ju} 局`;
+            document.getElementById('xun-shou-display').innerText = data.meta.xunShou;
+            document.getElementById('solar-term-display').innerText = termText;
+
+            updateAnalysis(data);
+            updateRiskAssessment(data);
+            updateChartSummary(data);
+            updateJiaHours(data.meta.dayIdx);
+        }
+
+        function updateChartSummary(data) {
+            const summaryDiv = document.getElementById('chart-summary');
+
+            // 1. Find Palaces for Key Doors
+            let doorPalaces = {};
+            for (let p in data.renPan) {
+                doorPalaces[data.renPan[p]] = parseInt(p);
+            }
+
+            // 2. Helper for Analysis
+            function analyzePalace(p) {
+                const door = data.renPan[p];
+                const star = data.tianPan[p];
+                const god = data.shenPan[p];
+                const hStem = data.tianPanStems[p];
+                const eStem = data.diPan[p];
+
+                // Stem Interaction
+                const STEM_ELEMENTS = { '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土', '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水' };
+                const hEl = STEM_ELEMENTS[hStem];
+                const eEl = STEM_ELEMENTS[eStem];
+
+                let interaction = '';
+                let interactionCode = 'neutral'; // great, good, drain, control, bad
+
+                if (hEl === eEl) {
+                    interaction = '比和 (平穩)';
+                    interactionCode = 'good';
+                } else if ((hEl === '金' && eEl === '水') || (hEl === '水' && eEl === '木') || (hEl === '木' && eEl === '火') || (hEl === '火' && eEl === '土') || (hEl === '土' && eEl === '金')) {
+                    interaction = '天生 (順利)';
+                    interactionCode = 'great';
+                } else if ((hEl === '金' && eEl === '木') || (hEl === '木' && eEl === '土') || (hEl === '土' && eEl === '水') || (hEl === '水' && eEl === '火') || (hEl === '火' && eEl === '金')) {
+                    interaction = '天剋 (阻礙)';
+                    interactionCode = 'bad';
+                } else if ((eEl === '金' && hEl === '水') || (eEl === '水' && hEl === '木') || (eEl === '木' && hEl === '火') || (eEl === '火' && hEl === '土') || (eEl === '土' && hEl === '金')) {
+                    interaction = '地生 (消耗)';
+                    interactionCode = 'drain';
+                } else {
+                    interaction = '地剋 (掌控)';
+                    interactionCode = 'control';
+                }
+
+                return { door, star, god, interaction, interactionCode, hStem, eStem };
+            }
+
+            // 3. Dynamic Advice Generator
+            function getDynamicAdvice(door, code) {
+                const map = {
+                    '開門': {
+                        'great': '✅ 宜：大展拳腳、開業、談判 (環境助力強)。',
+                        'good': '✅ 宜：求職、面試、啟動計畫 (平穩順利)。',
+                        'drain': '⚠️ 宜：主動出擊，但需付出較多心力 (多勞多得)。',
+                        'control': '⚠️ 宜：強勢主導，克服困難 (需親力親為)。',
+                        'bad': '❌ 忌：冒險擴張。✅ 宜：內部整頓、守成 (環境不利)。'
+                    },
+                    '生門': {
+                        'great': '✅ 宜：投資、求財、簽約 (財星高照)。',
+                        'good': '✅ 宜：經營、營造、理財 (穩健獲利)。',
+                        'drain': '⚠️ 宜：辛苦求財，不宜投機 (付出才有收穫)。',
+                        'control': '⚠️ 宜：積極爭取，控制成本 (需精打細算)。',
+                        'bad': '❌ 忌：大額投資。✅ 宜：保守儲蓄 (容易破財)。'
+                    },
+                    '景門': {
+                        'great': '✅ 宜：考試、發表、社交 (名聲大噪)。',
+                        'good': '✅ 宜：文書處理、規劃 (思路清晰)。',
+                        'drain': '⚠️ 宜：反覆確認細節 (溝通成本較高)。',
+                        'control': '⚠️ 宜：據理力爭 (需費唇舌)。',
+                        'bad': '❌ 忌：出風頭。✅ 宜：低調進修 (易有口舌)。'
+                    },
+                    '休門': {
+                        'great': '✅ 宜：休養、聚會、嫁娶 (身心放鬆)。',
+                        'good': '✅ 宜：調解、會見貴人 (氣氛和諧)。',
+                        'drain': '⚠️ 宜：忙裡偷閒 (瑣事纏身)。',
+                        'control': '⚠️ 宜：安排行程 (需主動協調)。',
+                        'bad': '❌ 忌：過度勞累。✅ 宜：強制休息 (易生病)。'
+                    },
+                    '傷門': {
+                        'great': '✅ 宜：比賽、競技、討債 (贏面大)。',
+                        'good': '✅ 宜：刑偵、捕捉 (行動力強)。',
+                        'drain': '⚠️ 宜：苦戰 (需付出代價才能贏)。',
+                        'control': '⚠️ 宜：強力執法 (需壓制對方)。',
+                        'bad': '❌ 忌：爭鬥。✅ 宜：忍耐 (易受傷/失敗)。'
+                    },
+                    '杜門': {
+                        'great': '✅ 宜：隱密研究、技術開發 (不受打擾)。',
+                        'good': '✅ 宜：避難、躲藏 (安全無虞)。',
+                        'drain': '⚠️ 宜：尋求突破 (路被擋住，需繞道)。',
+                        'control': '⚠️ 宜：解決問題 (需面對現實)。',
+                        'bad': '❌ 忌：封閉過頭。⚠️ 狀態：文書拖延、冷處理 (處處碰壁)。'
+                    },
+                    '驚門': {
+                        'great': '✅ 宜：律師、辯論、演說 (口才極佳)。',
+                        'good': '✅ 宜：設疑、掩捕 (聲勢浩大)。',
+                        'drain': '⚠️ 宜：解釋澄清 (場面尷尬，越描越黑)。',
+                        'control': '⚠️ 宜：據理力爭 (需強勢壓制)。',
+                        'bad': '❌ 忌：口舌是非。⚠️ 狀態：受驚、意外、嚴厲對待 (易惹禍)。'
+                    },
+                    '死門': {
+                        'great': '✅ 宜：宗教、心靈沉澱 (感悟深)。',
+                        'good': '✅ 宜：結案、斷捨離 (乾淨俐落)。',
+                        'drain': '⚠️ 宜：處理後事 (拖泥帶水)。',
+                        'control': '⚠️ 宜：強制結束 (需下定決心)。',
+                        'bad': '❌ 忌：鑽牛角尖。✅ 宜：靜心 (運勢低迷)。'
+                    }
+                };
+                return map[door] ? map[door][code] : '';
+            }
+
+            // 4. Generate Content for Categories
+            const categories = [
+                { title: '事業 / 工作', door: '開門', icon: '💼' },
+                { title: '財運 / 投資', door: '生門', icon: '💰' },
+                { title: '文書 / 社交', door: '景門', icon: '📚' },
+                { title: '休息 / 健康', door: '休門', icon: '😴' },
+                { title: '競爭 / 變動', door: '傷門', icon: '⚡' },
+                { title: '阻礙 / 隱遁', door: '杜門', icon: '🚧' },
+                { title: '驚恐 / 口舌', door: '驚門', icon: '😱' },
+                { title: '停滯 / 結案', door: '死門', icon: '💀' }
+            ];
+
+            let htmlContent = '';
+
+            // 5. Calculate Overall Tone (Global Scoring)
+            let totalScore = 60; // Base score
+            let badGodCount = 0;
+            let goodDoorCount = 0;
+
+            // Iterate all palaces to adjust score
+            for (let p in data.renPan) {
+                const d = data.renPan[p];
+                const g = data.shenPan[p];
+
+                if (['開門', '生門', '休門', '景門'].includes(d)) {
+                    totalScore += 2;
+                    goodDoorCount++;
+                } else {
+                    totalScore -= 2;
+                }
+
+                if (['白虎', '玄武', '騰蛇'].includes(g)) {
+                    totalScore -= 3;
+                    badGodCount++;
+                }
+            }
+
+            // Zhi Fu Palace Weighting (The Core)
+            const zhiFuP = data.meta.zhiFuPalace;
+            const zhiFuInfo = analyzePalace(zhiFuP);
+
+            if (zhiFuInfo.interactionCode === 'great') totalScore += 15;
+            else if (zhiFuInfo.interactionCode === 'good') totalScore += 5;
+            else if (zhiFuInfo.interactionCode === 'drain') totalScore -= 5;
+            else if (zhiFuInfo.interactionCode === 'control') totalScore += 5;
+            else if (zhiFuInfo.interactionCode === 'bad') totalScore -= 15;
+
+            let overallTone = '平穩';
+            let toneColor = '#ccc';
+
+            if (totalScore >= 85) { overallTone = '大吉 (諸事順遂)'; toneColor = '#f1c40f'; }
+            else if (totalScore >= 70) { overallTone = '吉 (穩健發展)'; toneColor = '#2ecc71'; }
+            else if (totalScore >= 55) { overallTone = '平穩 (普通)'; toneColor = '#ccc'; }
+            else if (totalScore >= 40) { overallTone = '普通偏凶 (表面穩、暗潮多)'; toneColor = '#e67e22'; }
+            else { overallTone = '凶 (諸事不宜)'; toneColor = '#e74c3c'; }
+
+            htmlContent += `
+                <div style="font-size:1.1rem; font-weight:bold; color:${toneColor}; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
+                    ⭐ 綜合評價：${overallTone}
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
+            `;
+
+            categories.forEach(cat => {
+                const p = doorPalaces[cat.door];
+                if (p) {
+                    const info = analyzePalace(p);
+
+                    // Dynamic Advice
+                    const yiJi = getDynamicAdvice(cat.door, info.interactionCode);
+
+                    // Special warnings
+                    let warnings = '';
+                    if (info.god === '玄武') warnings += ' <span style="color:#e74c3c">(防詐騙)</span>';
+                    if (info.god === '白虎') warnings += ' <span style="color:#e74c3c">(防爭執)</span>';
+                    if (info.star === '天芮') warnings += ' <span style="color:#e74c3c">(防問題)</span>';
+
+                    // Interaction Impact Text
+                    let interactionImpact = '';
+                    if (info.interactionCode === 'great') interactionImpact = '🚀 <strong>格局：</strong>天生助力強，順風順水。';
+                    else if (info.interactionCode === 'good') interactionImpact = '✨ <strong>格局：</strong>內外同心，平穩。';
+                    else if (info.interactionCode === 'drain') interactionImpact = '💦 <strong>格局：</strong>需多付出心力 (地生天)。';
+                    else if (info.interactionCode === 'control') interactionImpact = '🔧 <strong>格局：</strong>你能掌握主導權 (地剋天)。';
+                    else if (info.interactionCode === 'bad') interactionImpact = '⛔ <strong>格局：</strong>受阻礙，環境不利 (天剋地)。';
+
+                    htmlContent += `
+                        <div style="background:rgba(255,255,255,0.03); padding:8px; border-radius:5px;">
+                            <div style="color:var(--accent-gold); font-weight:bold; font-size:0.95rem; margin-bottom:4px;">
+                                ${cat.icon} ${cat.title} (${cat.door})
+                            </div>
+                            <div style="font-size:0.85rem; color:#ddd; line-height:1.6;">
+                                ➡ <strong>${cat.door}</strong> 落 <strong>${PALACE_NAMES[p]}</strong> (臨 ${info.star}、${info.god}${warnings})<br>
+                                <div style="margin: 4px 0; color:#bbb;">${interactionImpact}</div>
+                                <div style="margin-top:4px; padding-top:4px; border-top:1px solid rgba(255,255,255,0.1);">
+                                    ${yiJi}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            htmlContent += `</div>`;
+            summaryDiv.innerHTML = htmlContent;
+        }
+
+        function updateRiskAssessment(data) {
+            const riskDiv = document.getElementById('risk-assessment');
+            let risks = [];
+            let score = 0;
+
+            const zhiFuP = data.meta.zhiFuPalace;
+            const hourIdx = data.meta.hourIdx;
+            const dayIdx = data.meta.dayIdx;
+
+            // 1. 值符落空亡
+            const xunIdx = hourIdx - (hourIdx % 10);
+            let emptyBranches = [];
+            if (xunIdx === 0) emptyBranches = [10, 11];
+            else if (xunIdx === 10) emptyBranches = [8, 9];
+            else if (xunIdx === 20) emptyBranches = [6, 7];
+            else if (xunIdx === 30) emptyBranches = [4, 5];
+            else if (xunIdx === 40) emptyBranches = [2, 3];
+            else if (xunIdx === 50) emptyBranches = [0, 1];
+
+            const zhiFuBranches = PALACE_BRANCHES[zhiFuP] || [];
+            const isKongWang = zhiFuBranches.some(b => emptyBranches.includes(b));
+
+            if (isKongWang) {
+                risks.push(`❌ <strong>值符落空亡</strong> (大凶)：百事不實，應吉不吉，應凶更凶。`);
+                score += 40;
+            }
+
+            // 2. 值符落死門
+            if (data.renPan[zhiFuP] === '死門') {
+                risks.push(`❌ <strong>值符落死門</strong> (大凶)：主氣數將盡，不宜強行推動重大計畫。`);
+                score += 30;
+            }
+
+            // 3. 三奇受制
+            let yiControlled = false;
+            let bingControlled = false;
+            let dingControlled = false;
+
+            for (let p in data.tianPanStems) {
+                const stem = data.tianPanStems[p];
+                const palaceEl = PALACE_ELEMENTS[p];
+
+                if (stem === '乙') {
+                    if (palaceEl === '金' && !yiControlled) {
+                        risks.push(`❌ <strong>乙奇受制</strong>：貴人難發力，期望落空或延遲。`);
+                        score += 15;
+                        yiControlled = true;
+                    }
+                }
+                if (stem === '丙') {
+                    if (palaceEl === '水' && !bingControlled) {
+                        risks.push(`❌ <strong>丙奇受制</strong>：文書、考試、名聲方面多阻滯。`);
+                        score += 15;
+                        bingControlled = true;
+                    }
+                }
+                if (stem === '丁') {
+                    if (palaceEl === '水' && !dingControlled) {
+                        risks.push(`❌ <strong>丁奇受制</strong>：人際、感情或合約易有誤會與口舌。`);
+                        score += 15;
+                        dingControlled = true;
+                    }
+                }
+            }
+
+            // 4. 日干、時干互害
+            const dayGan = TIAN_GAN[dayIdx % 10];
+            const hourGan = TIAN_GAN[hourIdx % 10];
+
+            if ((dayGan === '甲' && hourGan === '庚') || (dayGan === '庚' && hourGan === '甲')) {
+                risks.push(`❌ <strong>日干、時干互害 (甲庚沖)</strong>：主客立場尖銳對立，宜避開正面衝突。`);
+                score += 20;
+            }
+            if ((dayGan === '乙' && hourGan === '辛') || (dayGan === '辛' && hourGan === '乙')) {
+                risks.push(`❌ <strong>日干、時干互害 (乙辛沖)</strong>：彼此暗中牽制，互有損傷。`);
+                score += 15;
+            }
+            if ((dayGan === '丙' && hourGan === '壬') || (dayGan === '壬' && hourGan === '丙')) {
+                risks.push(`❌ <strong>日干、時干互害 (丙壬沖)</strong>：水火不容，情緒與理智拉扯。`);
+                score += 15;
+            }
+            if ((dayGan === '丁' && hourGan === '癸') || (dayGan === '癸' && hourGan === '丁')) {
+                risks.push(`❌ <strong>日干、時干互害 (丁癸沖)</strong>：朱雀投江，口舌是非與情緒低落並存。`);
+                score += 15;
+            }
+
+            if (score > 100) score = 100;
+            lastRiskScore = score;
+
+            let html = '';
+
+            if (score === 0) {
+                const label = '低風險 · 0%';
+                const advice = '無明顯大凶之象，可依三吉門方位規劃行動。';
+
+                html += `
+            <div class="risk-header-row">
+                <div style="font-weight:600;">風險指數</div>
+                <div class="risk-tag risk-tag-low">${label}</div>
+            </div>
+            <div class="risk-bar-wrapper">
+                <div class="risk-bar-fill risk-bar-low" style="width:5%;"></div>
+            </div>
+            <div style="margin-top:6px; font-size:0.85rem; color:#ccc;">${advice}</div>
+        `;
+            } else {
+                let level = '';
+                let badgeClass = '';
+                let barClass = '';
+                let advice = '';
+
+                if (score <= 20) {
+                    level = '低風險';
+                    badgeClass = 'risk-tag-low';
+                    barClass = 'risk-bar-low';
+                    advice = '多半安全，可照常行動，僅需留意細節。';
+                } else if (score <= 50) {
+                    level = '中度風險';
+                    badgeClass = 'risk-tag-medium';
+                    barClass = 'risk-bar-medium';
+                    advice = '宜謹慎行事，避免押注在單一方案或方向。';
+                } else if (score <= 75) {
+                    level = '偏高風險';
+                    badgeClass = 'risk-tag-high';
+                    barClass = 'risk-bar-high';
+                    advice = '暫以觀望與調整為主，重大決策宜延後。';
+                } else {
+                    level = '高風險';
+                    badgeClass = 'risk-tag-very-high';
+                    barClass = 'risk-bar-very-high';
+                    advice = '建議暫停重大行動，以靜制動，避開衝突與硬碰硬。';
+                }
+
+                html += `
+            <div class="risk-header-row">
+                <div style="font-weight:600;">風險指數</div>
+                <div class="risk-tag ${badgeClass}">${level} · ${score}%</div>
+            </div>
+            <div class="risk-bar-wrapper">
+                <div class="risk-bar-fill ${barClass}" style="width:${score}%;"></div>
+            </div>
+            <div style="margin-top:6px; font-size:0.85rem; color:#ccc;">${advice}</div>
+        `;
+
+                if (risks.length) {
+                    html += `<div style="margin-top:10px;">${risks.map(r => `<div style="margin-bottom:5px;">${r}</div>`).join('')}</div>`;
+                }
+            }
+
+            riskDiv.innerHTML = html;
+        }
+
+        function updateJiaHours(dayIdx) {
+            const dayGan = dayIdx % 10;
+            const startHourStem = (dayGan * 2) % 10;
+
+            let jiaHours = [];
+            for (let b = 0; b < 12; b++) {
+                let s = (startHourStem + b) % 10;
+                if (TIAN_GAN[s] === '甲') {
+                    let branchName = DI_ZHI[b];
+                    let startH = (b * 2 + 23) % 24;
+                    let endH = (startH + 1) % 24;
+                    let range = `${startH.toString().padStart(2, '0')}:00-${endH.toString().padStart(2, '0')}:59`;
+                    jiaHours.push(`甲${branchName} (${range})`);
+                }
+            }
+            document.getElementById('jia-hours-display').innerText = jiaHours.length ? jiaHours.join(', ') : '今日無甲時';
+        }
+
+        function updateAnalysis(data) {
+            const luckyDiv = document.getElementById('lucky-directions');
+            const patternDiv = document.getElementById('pattern-analysis');
+
+            let luckyHTML = '';
+            let patterns = [];
+
+            ['生門', '開門', '休門'].forEach(door => {
+                for (let p in data.renPan) {
+                    if (data.renPan[p] === door) {
+                        const dir = DIRECTION_NAMES[p];
+                        luckyHTML += `<div style="margin-bottom:5px;"><span class="auspicious">${door}</span> 在 <span class="highlight">${dir}方</span> (${PALACE_NAMES[p]})</div>`;
+                    }
+                }
+            });
+
+            luckyDiv.innerHTML = luckyHTML || '無明顯吉門';
+
+            for (let p = 1; p <= 9; p++) {
+                if (p === 5) continue;
+                const hStem = data.tianPanStems[p];
+                const eStem = data.diPan[p];
+
+                if (hStem === '戊' && eStem === '丙') {
+                    patterns.push(`<span class="auspicious">青龍返首</span> 在 ${DIRECTION_NAMES[p]}方 (大吉)`);
+                }
+                if (hStem === '丙' && eStem === '戊') {
+                    patterns.push(`<span class="auspicious">飛鳥跌穴</span> 在 ${DIRECTION_NAMES[p]}方 (大吉)`);
+                }
+            }
+
+            patternDiv.innerHTML = patterns.length ? patterns.join('<br>') : '暫無特殊吉格';
+        }
+
+        let isCompassActive = false;
+        let lastHeading = 0;
+
+        function toggleCompass() {
+            if (!isCompassActive) {
+                requestDeviceOrientation();
+            } else {
+                isCompassActive = false;
+                window.removeEventListener('deviceorientation', handleOrientation);
+                document.getElementById('rotating-ring').style.transform = `rotate(0deg)`;
+                document.getElementById('qimen-grid').classList.remove('compass-active');
+                document.querySelectorAll('.palace').forEach(el => {
+                    el.style.transform = `rotate(0deg)`;
+                });
+                document.getElementById('compass-toggle').innerText = "啟用羅盤";
+                document.getElementById('compass-toggle').classList.remove('active');
+                document.getElementById('compass-indicator').style.display = 'none';
+            }
+        }
+
+        function requestDeviceOrientation() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            activateCompass();
+                        } else {
+                            alert("需要羅盤權限才能顯示方位");
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                activateCompass();
+            }
+        }
+
+        function activateCompass() {
+            isCompassActive = true;
+            window.addEventListener('deviceorientation', handleOrientation);
+            document.getElementById('qimen-grid').classList.add('compass-active');
+            document.getElementById('compass-toggle').innerText = "關閉羅盤";
+            document.getElementById('compass-toggle').classList.add('active');
+            document.getElementById('compass-indicator').style.display = 'block';
+        }
+
+        function handleOrientation(event) {
+            if (!isCompassActive) return;
+
+            const alpha = event.alpha;
+            let heading = alpha;
+            if (event.webkitCompassHeading) {
+                heading = event.webkitCompassHeading;
+            }
+
+            lastHeading = heading;
+            applyCompassRotation(heading);
+        }
+
+        function applyCompassRotation(heading) {
+            const ring = document.getElementById('rotating-ring');
+            if (ring) {
+                ring.style.transform = `rotate(${-heading}deg)`;
+            }
+        }
+
+        let lastChartSignature = '';
+
+        function update() {
+            if (!manualMode) {
+                currentState.date = new Date();
+            }
+            updateDatePicker(currentState.date);
+
+            currentState.solarTime = getTrueSolarTime(currentState.date, userLongitude);
+
+            document.getElementById('solar-time-display').innerText =
+                currentState.solarTime.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+            const chartData = calculateChart(currentState.date, currentState.solarTime);
+
+            const signature = chartData.meta.pillars.join('-') + '-' + chartData.meta.ju + '-' + chartData.meta.isYang;
+
+            if (signature !== lastChartSignature) {
+                renderChart(chartData);
+                lastChartSignature = signature;
+
+                if (isCompassActive) {
+                    applyCompassRotation(lastHeading);
+                }
+            }
+        }
+
+        function updateDatePicker(date, force = false) {
+            const pad = (n) => n.toString().padStart(2, '0');
+            const str = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+            const picker = document.getElementById('datetime-picker');
+            if (force || document.activeElement !== picker) {
+                picker.value = str;
+            }
+        }
+
+        document.getElementById('datetime-picker').addEventListener('change', (e) => {
+            if (e.target.value) {
+                // Valid input
+                manualMode = true;
+                currentState.date = new Date(e.target.value);
+                update();
+                // Force normalize display (e.g. 2025-11-31 -> 2025-12-01 if browser supported it, 
+                // or just standard formatting)
+                updateDatePicker(currentState.date, true);
+            } else {
+                // Invalid input (e.g. 2025-11-31 in some browsers results in empty value)
+                // Revert to last valid date to fix display
+                updateDatePicker(currentState.date, true);
+            }
+        });
+
+        document.getElementById('datetime-picker').addEventListener('blur', (e) => {
+            // Also normalize on blur to be safe
+            if (manualMode && currentState.date) {
+                updateDatePicker(currentState.date, true);
+            }
+        });
+
+        let manualMode = false;
+
+        function getTrueSolarTime(date, longitude) {
+            if (longitude === null) return date;
+            const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+            const b = (2 * Math.PI / 364.0) * (dayOfYear - 81);
+            const eot = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+            const timezoneOffsetMinutes = date.getTimezoneOffset();
+            const standardMeridian = -1 * (timezoneOffsetMinutes / 60) * 15;
+            const longDiff = longitude - standardMeridian;
+            const totalCorrectionMinutes = eot + longDiff * 4;
+            return new Date(date.getTime() + totalCorrectionMinutes * 60000);
+        }
+
+        function getGanZhiYear(date) {
+            let year;
+            if (date instanceof Date) {
+                year = date.getFullYear();
+                const m = date.getMonth();
+                const d = date.getDate();
+                if (m < 1 || (m === 1 && d < 4)) {
+                    year -= 1;
+                }
+            } else {
+                year = date;
+            }
+            return (year - 1984 + 6000) % 60;
+        }
+
+        function getGanZhiMonth(date, yearGanIdx) {
+            const m = date.getMonth(); const d = date.getDate();
+            let b = 0;
+            if ((m === 11 && d >= 7) || (m === 0 && d < 6)) b = 0;
+            else if ((m === 0 && d >= 6) || (m === 1 && d < 4)) b = 1;
+            else if ((m === 1 && d >= 4) || (m === 2 && d < 6)) b = 2;
+            else if ((m === 2 && d >= 6) || (m === 3 && d < 5)) b = 3;
+            else if ((m === 3 && d >= 5) || (m === 4 && d < 6)) b = 4;
+            else if ((m === 4 && d >= 6) || (m === 5 && d < 6)) b = 5;
+            else if ((m === 5 && d >= 6) || (m === 6 && d < 7)) b = 6;
+            else if ((m === 6 && d >= 7) || (m === 7 && d < 8)) b = 7;
+            else if ((m === 7 && d >= 8) || (m === 8 && d < 8)) b = 8;
+            else if ((m === 8 && d >= 8) || (m === 9 && d < 8)) b = 9;
+            else if ((m === 9 && d >= 8) || (m === 10 && d < 7)) b = 10;
+            else b = 11;
+
+            const yearGan = yearGanIdx % 10;
+            const startMonthStem = (yearGan * 2 + 2) % 10;
+            let dist = (b - 2 + 12) % 12;
+            const monthStem = (startMonthStem + dist) % 10;
+            return JIA_ZI.indexOf(TIAN_GAN[monthStem] + DI_ZHI[b]);
+        }
+
+        function getGanZhiDay(date) {
+            // Use UTC to avoid local timezone/DST issues
+            const d1 = Date.UTC(2024, 0, 1); // Jia Zi Ref (2024-01-01)
+            const d2 = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+
+            let extra = 0;
+            if (date.getHours() >= 23) {
+                extra = 1;
+            }
+
+            const diff = Math.round((d2 - d1) / 86400000) + extra;
+            return (diff % 60 + 60) % 60;
+        }
+
+        function getGanZhiHour(date, dayIdx) {
+            let h = date.getHours();
+            let b = Math.floor((h + 1) / 2) % 12;
+            const dayGan = dayIdx % 10;
+            const startHourStem = (dayGan * 2) % 10;
+            const s = (startHourStem + b) % 10;
+            return JIA_ZI.indexOf(TIAN_GAN[s] + DI_ZHI[b]);
+        }
+
+        function getXunShou(idx) { return JIA_ZI[idx - (idx % 10)]; }
+
+        function resetToNow() {
+            manualMode = false;
+            document.getElementById('datetime-picker').value = '';
+            update();
+        }
+
+
+
+        let userLongitude = null;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(p => {
+                userLongitude = p.coords.longitude;
+                update();
+            });
+        }
+
+        setInterval(() => {
+            if (!manualMode) update();
+        }, 1000);
+        update();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
