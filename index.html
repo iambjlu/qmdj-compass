@@ -749,7 +749,7 @@
             <strong>新手引導：</strong><br>
             <span style="color:#e74c3c">紅字</span>九星 (天)，<span style="color:#f1c40f">黃字</span>八門 (人)，<span
                 style="color:#3498db">藍字</span>八神 (神)。<br>
-            吉方：生、開、休。天盤干為紅色，地盤干為灰色。
+            吉方：生、開、休；凶門：傷、驚、死。天盤干為紅色，地盤干為灰色。
         </div>
     </div>
 
@@ -2574,9 +2574,26 @@
             const solarRow = document.getElementById('solar-time-row');
             const permissionRow = document.getElementById('location-permission-row');
 
-            if (userLongitude === null) {
+            if (isLocating) {
                 if (solarRow) solarRow.style.display = 'none';
-                if (permissionRow) permissionRow.style.display = 'flex';
+                if (permissionRow) {
+                    permissionRow.style.display = 'flex';
+                    // Temporarily show locating message
+                    permissionRow.innerHTML = '<span style="color: var(--accent-gold); font-size: 0.9rem;">正在取得真太陽時，目前精確度較低，請稍候...</span>';
+                }
+                // Use standard time while locating
+                currentState.solarTime = currentState.date;
+            } else if (userLongitude === null) {
+                if (solarRow) solarRow.style.display = 'none';
+                if (permissionRow) {
+                    permissionRow.style.display = 'flex';
+                    // Restore permission request content
+                    permissionRow.innerHTML = `
+                        <span style="font-size: 0.8rem;background-color: var(--accent-red); color: var(--accent-white); padding: 2px 8px;">無法使用真太陽時，精確度較低</span>
+                        <button class="btn btn-outline" onclick="requestLocation()" style="font-size: 0.8rem; padding: 2px 8px;">啟用位置權限</button> 
+                        <a class="btn btn-outline" href='https://google.com/search?q=網站無法取得位置權限' target="_blank" style="font-size: 0.8rem; padding: 2px 8px; text-decoration: none;">取得幫助</a>
+                    `;
+                }
                 // Use standard time if no location
                 currentState.solarTime = currentState.date;
             } else {
@@ -2797,22 +2814,49 @@
             }, 5000);
         }
 
+        let isLocating = false;
+
         function requestLocation() {
-            if (navigator.geolocation) {
-                showLocationRequestModal();
-                navigator.geolocation.getCurrentPosition(
-                    p => {
-                        userLongitude = p.coords.longitude;
+            if (!navigator.geolocation) return;
+
+            const successCallback = (p) => {
+                isLocating = false;
+                userLongitude = p.coords.longitude;
+                update();
+                hideLocationRequestModal();
+                showLocationSuccessModal();
+            };
+
+            const errorCallback = (err) => {
+                isLocating = false;
+                console.log('Location permission denied or error:', err);
+                update(); // To reset UI from "Locating..."
+                hideLocationRequestModal();
+                alert('無法取得真太陽時\n沒有位置存取權，無法準確計算結果');
+            };
+
+            // Try to check permission state
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' }).then(result => {
+                    if (result.state === 'granted') {
+                        // Already granted, just locate. Show "Locating..." in UI.
+                        isLocating = true;
                         update();
-                        hideLocationRequestModal();
-                        showLocationSuccessModal();
-                    },
-                    err => {
-                        console.log('Location permission denied or error:', err);
-                        hideLocationRequestModal();
-                        alert('無法取得真太陽時\n沒有位置存取權，無法準確計算結果');
+                        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+                    } else {
+                        // Prompt or Denied
+                        showLocationRequestModal();
+                        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
                     }
-                );
+                }).catch(() => {
+                    // Fallback
+                    showLocationRequestModal();
+                    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+                });
+            } else {
+                // Fallback
+                showLocationRequestModal();
+                navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
             }
         }
 
@@ -3048,16 +3092,17 @@
             document.getElementById('compass-info').innerText = `${directionStr} ${Math.round(heading)}°`;
         }
 
-        // Platform check to hide compass on Windows and non-Safari Mac
+        // Platform check to hide compass on Windows and non-Safari Mac or Linux or Android
         function checkCompassVisibility() {
             const ua = navigator.userAgent;
             const isWindows = ua.includes('Windows');
             const isMac = ua.includes('Macintosh');
+            const isLinux = ua.includes('Linux'); // Android測出來指南針不準
             // Safari detection: has 'Safari' but not 'Chrome' (Chrome has both) or 'Edg'
             const isSafari = ua.includes('Safari') && !ua.includes('Chrome') && !ua.includes('Edg');
 
             // Hide if Windows OR (Mac AND NOT Safari)
-            if (isWindows || (isMac && !isSafari)) {
+            if (isWindows || (isMac && !isSafari) || isLinux) {
                 const compassContainer = document.getElementById('compass-container');
                 if (compassContainer) {
                     compassContainer.style.display = 'none';
